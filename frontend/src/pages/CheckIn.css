@@ -1,0 +1,154 @@
+.checkin-page {
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.checkin-content {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.balance-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.balance-label {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.balance-value {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.checkin-card {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.checkin-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.checkin-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.checkin-description {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+}
+
+.reward-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.reward-label {
+  font-weight: 600;
+  color: #166534;
+}
+
+.reward-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.success-card {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.success-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.success-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #15803d;
+}
+
+.success-message {
+  color: #6b7280;
+  margin: 0 0 20px 0;
+}
+
+.new-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.balance-highlight {
+  color: #667eea;
+  font-size: 20px;
+}
+
+.tx-link {
+  display: inline-block;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.tx-link:hover {
+  text-decoration: underline;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
