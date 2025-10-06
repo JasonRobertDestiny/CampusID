@@ -1,111 +1,102 @@
 # 🎓 Campus ID - Web3 Digital Student Identity
 
-**StarkNet Re{Solve} Hackathon 项目**
+A decentralized campus digital identity ecosystem built on StarkNet, enabling students to mint NFT-based certificates, earn campus tokens through check-ins, and participate in a tokenized campus economy.
 
-一个基于StarkNet的去中心化校园数字身份系统，集成NFT学生证书和校园代币经济。
+## 🌟 Features
 
-## 🌟 项目特色
+- **🆔 NFT Student Certificate**: Mint unique student ID as an ERC721 NFT
+- **🪙 Campus Points (CPT)**: ERC20 token economy for campus activities
+- **📝 Daily Check-ins**: Earn 10 CPT tokens for each check-in
+- **🛒 Campus Store**: Purchase virtual items using CPT tokens
+- **📜 Transaction History**: Track all activities with on-chain verification
 
-- **🔑 钱包登录** - ArgentX钱包一键连接
-- **🎓 NFT证书** - 铸造独特的数字学生身份证书
-- **💰 校园代币** - CampusToken (CPT) 签到奖励系统
-- **🛒 校园商店** - 使用代币兑换商品
-- **📊 交易历史** - 完整的区块链记录查询
+## 🚀 Quick Start
 
-## 🚀 快速开始
-
-### 方式1：演示模式（立即可用）
+### Demo Mode (Immediate)
 ```bash
-# 启动前端 - 自动使用演示数据
+# Start frontend with demo data
 cd frontend
+npm install
 npm run dev
 ```
 
-演示模式特点：
-- ✅ 无需钱包连接
-- ✅ 完整功能展示
-- ✅ 模拟区块链交互
-- ✅ 适合演示和测试
+Visit: http://localhost:5173
 
-### 方式2：真实区块链模式
+Demo features:
+- ✅ No wallet connection required
+- ✅ Full functionality showcase
+- ✅ Simulated blockchain interactions
+- ✅ Perfect for presentations
 
-#### 前置要求
-- 安装 [ArgentX钱包](https://www.argent.xyz/argent-x/)
-- 获取StarkNet Sepolia测试ETH
+### Production Mode (Live)
 
-#### 获取测试ETH
-1. 访问水龙头获取测试币：
-   - StarkGate: https://starkgate.starknet.io
-   - Alchemy: https://sepolia-faucet.starknet.io
-   - Thirdweb: https://faucet.thirdweb.com/starknet-sepolia
+#### Prerequisites
+- Install [ArgentX Wallet](https://www.argent.xyz/argent-x/)
+- Get StarkNet Sepolia testnet ETH
 
-2. 输入钱包地址：`0x01955B38096A742046Dbe65B85460f479Ce9B2E0Bf36CD5fc2Db9A3562c79fF1`
-
-#### 部署智能合约
+#### Deployment
 ```bash
-# 方法1: 自动部署脚本
-./QUICK_FAUCET_DEPLOY.sh
-
-# 方法2: 手动部署
+# Deploy contracts
 cd contracts
 scarb build
-starkli declare target/dev/campus_contracts_StudentNFT.contract_class.json --rpc https://starknet-sepolia.public.blastapi.io --account-address 0x01955B38096A742046Dbe65B85460f479Ce9B2E0Bf36CD5fc2Db9A3562c79fF1 --private-key 0x02173fbe12ff48db4d659179b0655e4189fd440e9b8e5a1461de3caf8d0d76e8 --watch
-starkli declare target/dev/campus_contracts_CampusToken.contract_class.json --rpc https://starknet-sepolia.public.blastapi.io --account-address 0x01955B38096A742046Dbe65B85460f479Ce9B2E0Bf36CD5fc2Db9A3562c79fF1 --private-key 0x02173fbe12ff48db4d659179b0655e4189fd440e9b8e5a1461de3caf8d0d76e8 --watch
-```
+./deploy.sh
 
-#### 启动生产模式
-```bash
-# 更新配置为真实合约地址
+# Update frontend config
 ./update_to_production.sh
 
-# 启动前端
-cd frontend
+# Start production frontend
+cd ../frontend
 npm run dev
 ```
 
-## 📱 功能展示
+## 🏗️ Tech Stack
 
-### 1. 钱包连接
-- 自动检测ArgentX钱包
-- 一键连接StarkNet网络
-- 显示钱包地址和余额
+### Smart Contracts
+- **Cairo 2024_07** - StarkNet smart contract language
+- **OpenZeppelin** - Security standards for ERC721/ERC20
+- **StudentNFT** - ERC721 student certificate contract
+- **CampusToken** - ERC20 campus token contract
 
-### 2. 学生证书NFT
-- 首次登录自动铸造
-- 包含学生基本信息
-- 独特的头像和学号
+### Frontend
+- **React 19** + **TypeScript** - Modern UI framework
+- **Vite** - Ultra-fast build tool
+- **starknet.js v7** - StarkNet blockchain interaction
+- **Tailwind CSS** - Mobile-first responsive design
 
-### 3. 每日签到
-- 每天可获得10 CPT代币
-- 智能合约自动发放
-- 防重复签到机制
+### Infrastructure
+- **StarkNet Layer 2** - Low fees, high throughput
+- **Account Abstraction** - User-friendly wallet experience
+- **Sepolia Testnet** - Development and testing
 
-### 4. 校园商店
-- ☕ 咖啡 - 20 CPT
-- 🍞 面包 - 30 CPT
-- 🥤 饮料 - 50 CPT
-- 即时交易确认
+## 📱 User Experience
 
-### 5. 交易历史
-- 完整的操作记录
-- 区块链交易哈希
-- 可在Voyager浏览器验证
+### 1. Wallet Connection
+- Auto-detect ArgentX wallet
+- One-click StarkNet network connection
+- Display wallet address and balance
 
-## 🏗️ 技术架构
+### 2. Student Certificate NFT
+- Auto-minted on first login
+- Contains student metadata (avatar, name, ID)
+- Unique and permanent digital identity
 
-### 前端技术栈
-- **React 19** + **TypeScript** - 现代化UI框架
-- **Vite** - 极速构建工具
-- **starknet.js v7** - StarkNet区块链交互
-- **Tailwind CSS** - 移动端优先设计
+### 3. Daily Check-in
+- Earn 10 CPT tokens daily
+- Smart contract auto-distribution
+- Anti-duplicate check-in mechanism
 
-### 智能合约
-- **Cairo 2024_07** - StarkNet智能合约语言
-- **OpenZeppelin** - 安全的合约标准
-- **StudentNFT** - ERC721学生证书
-- **CampusToken** - ERC20校园代币
+### 4. Campus Store
+- ☕ Coffee - 20 CPT
+- 🍞 Bread - 30 CPT
+- 🥤 Drink - 50 CPT
+- Instant transaction confirmation
 
-## 📁 Project Structure
+### 5. Transaction History
+- Complete operation records
+- Blockchain transaction hashes
+- Verifiable on Voyager explorer
+
+## 🎯 Project Structure
 
 ```
 StarkNet_hackathon/
@@ -118,26 +109,19 @@ StarkNet_hackathon/
 └── frontend/                  # React frontend
     ├── src/
     │   ├── components/       # UI components
-    │   ├── contexts/         # Wallet context
-    │   ├── pages/           # Login, Home, CheckIn, Store, History
-    │   ├── services/        # Contract interaction
+    │   ├── contexts/         # Wallet and app contexts
+    │   ├── pages/           # App pages (Login, Home, etc.)
+    │   ├── services/        # Contract interaction services
     │   ├── types/           # TypeScript types
-    │   └── utils/           # Helpers & constants
+    │   └── utils/           # Helpers and constants
     └── package.json         # Dependencies
 ```
 
-## 🚀 Quick Start
+## 🔧 Development
 
-### Prerequisites
-
-- [Node.js 18+](https://nodejs.org/)
-- [Scarb](https://docs.swmansion.com/scarb/download) (Cairo build tool)
-- [ArgentX Wallet](https://www.argent.xyz/argent-x/)
-
-### Installation
-
+### Environment Setup
 ```bash
-# Install Scarb
+# Install Cairo/Scarb
 curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
 
 # Install frontend dependencies
@@ -145,151 +129,102 @@ cd frontend
 npm install
 ```
 
-### Build Contracts
-
+### Development Commands
 ```bash
-cd contracts
-scarb build
-```
-
-### Run Frontend
-
-```bash
+# Frontend development
 cd frontend
-npm run dev
-```
+npm run dev          # Start dev server
+npm run build        # Build for production
+npm run lint         # Run ESLint
 
-Visit: http://localhost:5173
-
-## 📝 Smart Contract Development
-
-### Build
-
-```bash
+# Contract development
 cd contracts
-scarb build
+scarb build          # Compile contracts
+scarb test           # Run tests
 ```
 
-### Deploy to StarkNet Sepolia
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
-
-## 🎨 Frontend Development
-
-### Development Server
-
-```bash
-cd frontend
-npm run dev
-```
-
-### Build for Production
-
-```bash
-npm run build
-npm run preview  # Test production build
-```
-
-### Environment Configuration
-
-Create `.env` in `frontend/` directory:
-
+### Environment Variables
+Create `frontend/.env`:
 ```env
 VITE_STARKNET_NETWORK=sepolia
 VITE_STARKNET_RPC_URL=https://starknet-sepolia.public.blastapi.io
 VITE_STUDENT_NFT_ADDRESS=0x...
 VITE_CAMPUS_TOKEN_ADDRESS=0x...
 VITE_STORE_ADDRESS=0x...
-VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
+VITE_DEMO_MODE=true  # Set to false for production
 ```
 
-## 🎯 User Flow
+## 🎪 Demo Instructions
 
-1. **Connect Wallet**: User connects ArgentX wallet
-2. **Mint NFT**: First-time users mint their student certificate
-3. **Check-in**: Users earn 10 CPT tokens daily
-4. **Shop**: Browse and purchase items with CPT
-5. **History**: View all transactions with blockchain verification
+### Quick Demo
+1. Run `npm run dev` in frontend directory
+2. Visit http://localhost:5173
+3. Explore all features without wallet
+4. Experience complete user journey
 
-## 📄 Smart Contracts
+### Production Demo
+1. Connect ArgentX wallet
+2. Switch to Sepolia testnet
+3. Mint student NFT certificate
+4. Perform check-ins and store purchases
+5. Verify transactions on blockchain explorer
 
-### StudentNFT (ERC721)
+## 🏆 Innovation Points
 
-```cairo
-mint_student_nft(avatar_uri, student_name, student_id) → token_id
-has_nft(account) → bool
-get_student_info(token_id) → (avatar, name, id)
-```
+### Technical Innovation
+- **First on StarkNet**: Pioneer student identity system on StarkNet
+- **Account Abstraction**: Seamless wallet experience
+- **Hybrid Architecture**: Demo + production modes
+- **Mobile Optimization**: H5-first responsive design
 
-### CampusToken (ERC20)
+### Business Innovation
+- **Educational DeFi**: Tokenized campus participation
+- **Digital Identity**: Verifiable student credentials
+- **Incentive Mechanics**: Gamified campus engagement
+- **Data Sovereignty**: User-controlled digital identity
 
-```cairo
-check_in() → bool              // Mint 10 CPT to caller
-purchase(store, amount) → bool // Transfer tokens for purchase
-balance_of(account) → u256
-```
+## 📊 Project Status
 
-## 🔧 Configuration
+### ✅ Completed
+- [x] Smart contracts (StudentNFT + CampusToken)
+- [x] Frontend application (5 complete pages)
+- [x] Wallet integration (ArgentX)
+- [x] Demo mode functionality
+- [x] Mobile responsive design
+- [x] Transaction history system
+- [x] Complete documentation
 
-### Store Products
-
-Edit `frontend/src/utils/constants.ts`:
-
-```typescript
-export const PRODUCTS = [
-  { id: '1', name: 'Coffee', price: '20', image: '☕' },
-  { id: '2', name: 'Bread', price: '30', image: '🍞' },
-  { id: '3', name: 'Drink', price: '50', image: '🥤' },
-];
-```
-
-## 🚢 Deployment
-
-### Smart Contracts
-
-1. Deploy StudentNFT contract
-2. Deploy CampusToken contract
-3. Update `.env` with contract addresses
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step guide.
-
-### Frontend
-
-Deploy to Vercel/Netlify:
-
-```bash
-cd frontend
-npm run build
-# Deploy dist/ folder
-```
+### 🚀 Future Enhancements
+- [ ] Multi-campus support
+- [ ] Achievement system
+- [ ] DeFi integrations
+- [ ] Cross-chain compatibility
+- [ ] Admin dashboard
+- [ ] Advanced NFT attributes
 
 ## 🧪 Testing
 
 ### Build Test
-
 ```bash
-cd frontend
-npm run build
+cd frontend && npm run build
 ```
 
 ### Contract Test
-
 ```bash
-cd contracts
-scarb test
+cd contracts && scarb test
 ```
 
 ## 📚 Documentation
 
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Detailed deployment guide
-- [CLAUDE.md](./CLAUDE.md) - Architecture notes for AI assistance
+- [DEMO_GUIDE.md](./DEMO_GUIDE.md) - Detailed demo instructions
+- [SUBMISSION.md](./SUBMISSION.md) - Hackathon submission details
 
 ## 🐛 Troubleshooting
 
 **Wallet won't connect:**
 - Install ArgentX extension
 - Switch to Sepolia testnet
-- Refresh page
+- Refresh the page
 
 **Build errors:**
 ```bash
@@ -312,6 +247,7 @@ Built for StarkNet Re{Solve} Hackathon
 
 - StarkNet Foundation
 - StarkWare
+- OpenZeppelin
 - ArgentX Wallet
 
 ---
