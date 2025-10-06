@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
+import { useApp } from '../contexts/AppContext';
 import { Button, Card } from '../components';
 import { NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
@@ -9,6 +10,7 @@ import './History.css';
 
 export const History: React.FC = () => {
   const { isConnected } = useWallet();
+  const { isDemoMode } = useApp();
   const navigate = useNavigate();
   const [history, setHistory] = useState<TransactionRecord[]>([]);
   const [filter, setFilter] = useState<'all' | 'checkin' | 'purchase'>('all');
@@ -20,10 +22,11 @@ export const History: React.FC = () => {
     }
 
     loadHistory();
-  }, [isConnected]);
+  }, [isConnected, isDemoMode]);
 
   const loadHistory = () => {
-    const storedHistory = localStorage.getItem('txHistory');
+    const storageKey = isDemoMode ? 'demo_history' : 'txHistory';
+    const storedHistory = localStorage.getItem(storageKey);
     if (storedHistory) {
       setHistory(JSON.parse(storedHistory));
     }

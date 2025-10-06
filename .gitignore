@@ -33,3 +33,17 @@ coverage/
 # Temporary files
 *.tmp
 .cache/
+
+# Claude tools and configs (keep .claude directory)
+.claude/cache/
+.claude/tmp/
+.claude/logs/
+
+# StarkNet artifacts
+account.json
+keystore.json
+*.account.json
+
+# Deployment scripts (keep main ones)
+deploy_contracts.sh
+account_deploy.json

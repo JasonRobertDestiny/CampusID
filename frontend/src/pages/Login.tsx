@@ -1,18 +1,30 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
+import { useApp } from '../contexts/AppContext';
 import { Button } from '../components';
 import './Login.css';
 
 export const Login: React.FC = () => {
   const { isConnected, connectWallet, isConnecting, error } = useWallet();
+  const { isDemoMode, setDemoMode } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected || isDemoMode) {
       navigate('/home');
     }
-  }, [isConnected, navigate]);
+  }, [isConnected, isDemoMode, navigate]);
+
+  const handleDemoMode = () => {
+    setDemoMode(true);
+    navigate('/home');
+  };
+
+  const handleWalletConnect = async () => {
+    setDemoMode(false);
+    await connectWallet();
+  };
 
   return (
     <div className="login-page">
@@ -38,20 +50,41 @@ export const Login: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            onClick={connectWallet}
-            loading={isConnecting}
-            fullWidth
-            variant="primary"
-          >
-            {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-          </Button>
+          <div className="auth-buttons">
+            <Button
+              onClick={handleDemoMode}
+              fullWidth
+              variant="primary"
+            >
+              🚀 Try Demo Mode
+            </Button>
+
+            <div className="divider">
+              <span>or</span>
+            </div>
+
+            <Button
+              onClick={handleWalletConnect}
+              loading={isConnecting}
+              fullWidth
+              variant="secondary"
+            >
+              {isConnecting ? 'Connecting...' : '🔐 Connect Wallet'}
+            </Button>
+          </div>
 
           {error && <p className="error-message">{error}</p>}
 
-          <p className="wallet-note">
-            Please install ArgentX wallet extension to continue
-          </p>
+          <div className="info-cards">
+            <div className="info-card">
+              <h4>Demo Mode</h4>
+              <p>Try all features instantly without blockchain connection. Perfect for testing!</p>
+            </div>
+            <div className="info-card">
+              <h4>Wallet Mode</h4>
+              <p>Connect ArgentX wallet for real blockchain transactions on StarkNet.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -13,26 +13,55 @@ Web3 Campus Digital Identity + Points Ecosystem for StarkNet Re{Solve} Hackathon
 ## Tech Stack
 
 **Frontend:**
-- React + Vite for H5 mobile interface
-- starknet.js for blockchain interactions
-- Wallet: ArgentX integration
+- React 19 + TypeScript + Vite for H5 mobile interface
+- starknet.js v7 for blockchain interactions
+- React Router v7 for navigation
+- ArgentX wallet integration via get-starknet
+- Mobile-first responsive design with CSS custom properties
 
 **Smart Contracts:**
-- Cairo for StarkNet contracts
-- ERC721: Student Certificate NFT (includes avatar, name, student ID)
-- ERC20: CampusToken (CPT) - unlimited supply, distributed by contract
-- Deploy to StarkNet testnet
+- Cairo for StarkNet contracts (edition 2024_07)
+- OpenZeppelin ERC721 and ERC20 implementations
+- StudentNFT: ERC721 with student metadata (avatar, name, student ID)
+- CampusToken: ERC20 with check-in reward mechanism
+- Scarb build system for compilation to Sierra and CASM
+- Deploy to StarkNet Sepolia testnet
 
-## Project Structure (Expected)
+## Project Structure
 
 ```
-/contracts/          # Cairo smart contracts
-  student_nft.cairo  # ERC721 student certificate
-  campus_token.cairo # ERC20 campus points
-/src/                # React frontend
-  /components/       # UI components
-  /services/         # Blockchain interaction layer
-  /pages/           # Login, Home, CheckIn, Store, History
+/contracts/                 # Cairo smart contracts
+  src/
+    student_nft.cairo      # ERC721 student certificate
+    campus_token.cairo     # ERC20 campus points
+  Scarb.toml               # Contract dependencies and build config
+  target/                  # Compiled contract artifacts
+
+/frontend/                  # React H5 mobile application
+  src/
+    /components/           # Reusable UI components
+      AvatarPicker.tsx     # NFT avatar selection
+      index.ts            # Component exports
+    /contexts/             # React Context providers
+      WalletContext.tsx   # ArgentX wallet connection
+      AppContext.tsx      # Application state
+      ToastContext.tsx    # Notification system
+    /pages/               # Route components
+      Login.tsx          # Wallet connection page
+      Home.tsx           # Student certificate display
+      CheckIn.tsx        # Daily check-in rewards
+      Store.tsx          # Campus store with products
+      History.tsx        # Transaction history
+    /services/            # Contract interaction services
+      studentNFT.ts      # StudentNFT contract service
+      campusToken.ts     # CampusToken contract service
+      mockServices.ts    # Development mock services
+    /utils/               # Utilities and constants
+      constants.ts       # Contract addresses and config
+      mockData.ts        # Mock data for development
+    App.tsx              # Main application component
+    App.css              # Global styles
+  package.json           # Frontend dependencies
 ```
 
 ## Core Smart Contract Logic
@@ -50,22 +79,40 @@ Web3 Campus Digital Identity + Points Ecosystem for StarkNet Re{Solve} Hackathon
 
 ## Development Commands
 
-**Frontend:**
+**Frontend Development:**
 ```bash
+cd frontend
 npm install           # Install dependencies
-npm run dev          # Start development server
+npm run dev          # Start development server on localhost:5173
 npm run build        # Build for production
+npm run lint         # Run ESLint checks
+npm run preview      # Test production build locally
 ```
 
-**Smart Contracts:**
+**Smart Contract Development:**
 ```bash
-scarb build          # Compile Cairo contracts
+cd contracts
+scarb build          # Compile Cairo contracts to Sierra and CASM
 scarb test           # Run contract tests
+scarb clean          # Clean build artifacts
+```
+
+**Testing & Validation:**
+```bash
+# Frontend build test
+cd frontend && npm run build
+
+# Contract compilation test
+cd contracts && scarb build
+
+# Type checking
+cd frontend && npx tsc --noEmit
 ```
 
 **Deployment:**
 ```bash
-# Deploy to StarkNet testnet using starknet CLI or scripts
+# Deploy to StarkNet testnet using starkli CLI
+# See DEPLOYMENT.md for detailed deployment instructions
 ```
 
 ## Key User Flows
@@ -93,19 +140,31 @@ scarb test           # Run contract tests
 ## Architecture Notes
 
 **State Management:**
-- Use React Context or lightweight state manager for wallet connection state
-- Cache user's NFT metadata and token balance
-- Refresh balance after each transaction
+- Three-context provider architecture: WalletProvider → AppProvider → ToastProvider
+- WalletContext handles ArgentX connection via get-starknet library
+- AppContext manages application state (user data, transactions, balances)
+- ToastContext handles user notifications and loading states
+- Mock services system in services/mockServices.ts for development without deployed contracts
 
 **Contract Interaction Pattern:**
-- All contract calls through starknet.js
+- Service-based architecture: StudentNFTService and CampusTokenService
+- All contract calls through starknet.js Contract class with ABI definitions
+- Services handle ABI parsing, contract instantiation, and transaction execution
 - Handle transaction states: pending, success, error
 - Wait for transaction confirmation before updating UI
+- Mock data system in utils/mockData.ts for offline development
+
+**Configuration Management:**
+- CONTRACT_ADDRESSES constant in utils/constants.ts for contract addresses
+- Environment variables for network endpoints (VITE_STARKNET_RPC_URL)
+- Store products configurable via PRODUCTS array in constants
+- Avatar picker component for NFT customization
 
 **Error Handling:**
 - Wallet not installed → prompt user to install ArgentX
 - Insufficient balance → show clear error message
 - Transaction failed → display transaction hash for debugging
+- Network issues → show retry mechanism with timeout handling
 
 ## UI Pages
 
@@ -146,4 +205,19 @@ Nice-to-have:
 Use StarkNet Sepolia testnet for deployment:
 - Get testnet ETH from StarkNet faucet
 - Configure RPC endpoints in environment variables
-- Store deployed contract addresses in config file
+- Store deployed contract addresses in utils/constants.ts
+
+**Environment Variables (frontend/.env):**
+```env
+VITE_STARKNET_NETWORK=sepolia
+VITE_STARKNET_RPC_URL=https://starknet-sepolia.public.blastapi.io
+VITE_STUDENT_NFT_ADDRESS=0x...
+VITE_CAMPUS_TOKEN_ADDRESS=0x...
+VITE_STORE_ADDRESS=0x...
+VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
+```
+
+**Contract Address Management:**
+- Update CONTRACT_ADDRESSES in utils/constants.ts after deployment
+- Addresses used by services for contract instantiation
+- Environment variables override for different networks

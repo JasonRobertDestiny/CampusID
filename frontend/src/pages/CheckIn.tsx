@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
+import { useApp } from '../contexts/AppContext';
+import { useToast } from '../contexts/ToastContext';
 import { CampusTokenService } from '../services';
+import { MockCampusTokenService } from '../services/mockServices';
 import { Button, Card } from '../components';
 import { CHECKIN_REWARD, NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
 import './CheckIn.css';
 
 export const CheckIn: React.FC = () => {
-  const { account, isConnected } = useWallet();
+  const { account, address, isConnected } = useWallet();
+  const { isDemoMode } = useApp();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [txHash, setTxHash] = useState<string>('');
   const [balance, setBalance] = useState('0');
 
-  const tokenService = new CampusTokenService();
+  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
 
   useEffect(() => {
     if (!isConnected) {
@@ -27,19 +32,23 @@ export const CheckIn: React.FC = () => {
   }, [isConnected, account]);
 
   const loadBalance = async () => {
-    if (!account || !isConnected) return;
+    if (!isDemoMode && (!account || !isConnected)) return;
 
     try {
-      tokenService.initialize(account);
-      const balance = await tokenService.getBalance(account.address);
+      if (!isDemoMode && account) {
+        tokenService.initialize(account);
+      }
+      const userAddress = address || '0x1234...5678';
+      const balance = await tokenService.getBalance(userAddress);
       setBalance(balance);
     } catch (error) {
       console.error('Error loading balance:', error);
+      showToast('Failed to load balance', 'error');
     }
   };
 
   const handleCheckIn = async () => {
-    if (!account) return;
+    if (!isDemoMode && !account) return;
 
     try {
       setLoading(true);
@@ -48,24 +57,13 @@ export const CheckIn: React.FC = () => {
       const hash = await tokenService.checkIn();
       setTxHash(hash);
       setSuccess(true);
+      showToast(`Successfully earned ${CHECKIN_REWARD} CPT! 🎉`, 'success');
 
       // Reload balance after successful check-in
       await loadBalance();
-
-      // Save to local history
-      const history = JSON.parse(localStorage.getItem('txHistory') || '[]');
-      history.unshift({
-        id: Date.now().toString(),
-        type: 'checkin',
-        amount: CHECKIN_REWARD,
-        timestamp: Date.now(),
-        txHash: hash,
-        description: 'Daily check-in reward',
-      });
-      localStorage.setItem('txHistory', JSON.stringify(history.slice(0, 50))); // Keep last 50
     } catch (error) {
       console.error('Check-in error:', error);
-      alert('Check-in failed. Please try again.');
+      showToast('Check-in failed. Please try again.', 'error');
     } finally {
       setLoading(false);
     }

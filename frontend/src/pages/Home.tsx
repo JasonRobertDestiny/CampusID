@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
+import { useApp } from '../contexts/AppContext';
+import { useToast } from '../contexts/ToastContext';
 import { StudentNFTService, CampusTokenService } from '../services';
+import { MockStudentNFTService, MockCampusTokenService } from '../services/mockServices';
 import { Button, Card, Loading } from '../components';
+import { AvatarPicker } from '../components/AvatarPicker';
 import { shortAddress } from '../utils/helpers';
 import './Home.css';
 
 export const Home: React.FC = () => {
   const { account, address, isConnected, disconnectWallet } = useWallet();
+  const { isDemoMode } = useApp();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [hasNFT, setHasNFT] = useState(false);
@@ -18,10 +24,12 @@ export const Home: React.FC = () => {
     studentId: '',
   });
   const [showMintForm, setShowMintForm] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState('');
   const [minting, setMinting] = useState(false);
 
-  const nftService = new StudentNFTService();
-  const tokenService = new CampusTokenService();
+  const nftService = isDemoMode ? new MockStudentNFTService() : new StudentNFTService();
+  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
 
   useEffect(() => {
     if (!isConnected) {
@@ -33,28 +41,32 @@ export const Home: React.FC = () => {
   }, [isConnected, account]);
 
   const loadData = async () => {
-    if (!account || !address) return;
+    if (!isDemoMode && (!account || !address)) return;
 
     try {
       setLoading(true);
-      nftService.initialize(account);
-      tokenService.initialize(account);
 
+      if (!isDemoMode) {
+        nftService.initialize(account!);
+        tokenService.initialize(account!);
+      }
+
+      const userAddress = address || '0x1234...5678';
       const [nftExists, tokenBalance] = await Promise.all([
-        nftService.hasNFT(address),
-        tokenService.getBalance(address),
+        nftService.hasNFT(userAddress),
+        tokenService.getBalance(userAddress),
       ]);
 
       setHasNFT(nftExists);
       setBalance(tokenBalance);
 
       if (nftExists) {
-        // Get student info (assuming tokenId = 1 for demo)
         const info = await nftService.getStudentInfo('1');
         setStudentInfo(info);
       }
     } catch (error) {
       console.error('Error loading data:', error);
+      showToast('Failed to load data. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -62,21 +74,37 @@ export const Home: React.FC = () => {
 
   const handleMintNFT = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!account) return;
+    if (!isDemoMode && !account) return;
+
+    // Validate avatar selection
+    if (!selectedAvatar) {
+      showToast('Please select an avatar first!', 'warning');
+      return;
+    }
 
     try {
       setMinting(true);
       const formData = new FormData(e.currentTarget);
-      const avatarUri = formData.get('avatar') as string;
+      const avatarUri = selectedAvatar;
       const studentName = formData.get('name') as string;
       const studentId = formData.get('id') as string;
 
+      // Validate inputs
+      if (!studentName || !studentId) {
+        showToast('Please fill in all fields', 'warning');
+        setMinting(false);
+        return;
+      }
+
       await nftService.mintNFT(avatarUri, studentName, studentId);
+      showToast('Student NFT minted successfully! 🎉', 'success');
       await loadData();
       setShowMintForm(false);
+      setSelectedAvatar('');
     } catch (error) {
       console.error('Error minting NFT:', error);
-      alert('Failed to mint NFT. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mint NFT';
+      showToast(errorMessage, 'error');
     } finally {
       setMinting(false);
     }
@@ -96,7 +124,8 @@ export const Home: React.FC = () => {
       <header className="home-header">
         <h2>🎓 Campus ID</h2>
         <div className="header-actions">
-          <span className="address-display">{shortAddress(address || '')}</span>
+          {isDemoMode && <span className="demo-badge">Demo Mode</span>}
+          <span className="address-display">{shortAddress(address || '0x1234...5678')}</span>
           <Button onClick={handleDisconnect} variant="secondary">
             Disconnect
           </Button>
@@ -104,6 +133,14 @@ export const Home: React.FC = () => {
       </header>
 
       <div className="home-content">
+        {isDemoMode && (
+          <Card className="demo-notice">
+            <p>
+              💡 <strong>Demo Mode Active:</strong> You're experiencing the app without deploying contracts. All data is stored locally.
+            </p>
+          </Card>
+        )}
+
         <div className="balance-card">
           <h3>Campus Points Balance</h3>
           <p className="balance-amount">{balance} CPT</p>
@@ -123,43 +160,75 @@ export const Home: React.FC = () => {
           <Card className="mint-form-card">
             <h3>Create Student Certificate</h3>
             <form onSubmit={handleMintNFT} className="mint-form">
-              <div className="form-group">
-                <label>Avatar URL</label>
-                <input
-                  type="text"
-                  name="avatar"
-                  placeholder="https://..."
-                  defaultValue="https://via.placeholder.com/150"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Student Name</label>
-                <input type="text" name="name" placeholder="Your name" required />
-              </div>
-              <div className="form-group">
-                <label>Student ID</label>
-                <input
-                  type="text"
-                  name="id"
-                  placeholder="Student ID"
-                  defaultValue={`STU${Date.now().toString().slice(-6)}`}
-                  required
-                />
-              </div>
-              <div className="form-actions">
-                <Button type="submit" loading={minting} fullWidth>
-                  Mint NFT
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowMintForm(false)}
-                  fullWidth
-                >
-                  Cancel
-                </Button>
-              </div>
+              {!showAvatarPicker ? (
+                <>
+                  <div className="form-group">
+                    <label>Choose Avatar {!selectedAvatar && <span className="required">*</span>}</label>
+                    <Button
+                      type="button"
+                      onClick={() => setShowAvatarPicker(true)}
+                      fullWidth
+                      variant="secondary"
+                    >
+                      {selectedAvatar ? '✅ Avatar Selected - Click to Change' : '📸 Select Avatar (Required)'}
+                    </Button>
+                    {selectedAvatar && (
+                      <div className="avatar-preview-small">
+                        <img src={selectedAvatar} alt="Selected avatar" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Student Name <span className="required">*</span></label>
+                    <input type="text" name="name" placeholder="Your name" required />
+                  </div>
+                  <div className="form-group">
+                    <label>Student ID <span className="required">*</span></label>
+                    <input
+                      type="text"
+                      name="id"
+                      placeholder="Student ID"
+                      defaultValue={`STU${Date.now().toString().slice(-6)}`}
+                      required
+                    />
+                  </div>
+                  <div className="form-actions">
+                    <Button
+                      type="submit"
+                      loading={minting}
+                      fullWidth
+                      disabled={!selectedAvatar || minting}
+                    >
+                      {minting ? 'Minting...' : selectedAvatar ? 'Mint NFT' : 'Select Avatar First'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setShowMintForm(false);
+                        setSelectedAvatar('');
+                      }}
+                      fullWidth
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <AvatarPicker
+                    onSelect={setSelectedAvatar}
+                    currentAvatar={selectedAvatar}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setShowAvatarPicker(false)}
+                    fullWidth
+                  >
+                    Continue
+                  </Button>
+                </>
+              )}
             </form>
           </Card>
         )}

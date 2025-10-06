@@ -45,14 +45,31 @@ export class StudentNFTService {
   private contract: Contract | null = null;
 
   initialize(account: AccountInterface) {
-    if (!CONTRACT_ADDRESSES.STUDENT_NFT) {
-      throw new Error('Student NFT contract address not configured');
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!CONTRACT_ADDRESSES.STUDENT_NFT || CONTRACT_ADDRESSES.STUDENT_NFT === '0x0000000000000000000000000000000000000000000000000000000000000000') {
+      if (!isDemoMode) {
+        throw new Error('Student NFT contract address not configured. Please deploy contracts and update environment variables.');
+      }
+      // In demo mode, don't initialize the contract
+      return;
     }
+
     this.contract = new Contract(STUDENT_NFT_ABI, CONTRACT_ADDRESSES.STUDENT_NFT, account);
   }
 
   async hasNFT(address: string): Promise<boolean> {
-    if (!this.contract) throw new Error('Contract not initialized');
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!this.contract) {
+      if (isDemoMode) {
+        // In demo mode, check localStorage
+        const data = localStorage.getItem('demo_hasNFT');
+        return data === 'true';
+      }
+      throw new Error('Contract not initialized');
+    }
+
     try {
       const result = await this.contract.has_nft(address);
       return result as boolean;
@@ -67,7 +84,19 @@ export class StudentNFTService {
     studentName: string,
     studentId: string
   ): Promise<{ tokenId: string; txHash: string }> {
-    if (!this.contract) throw new Error('Contract not initialized');
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!this.contract) {
+      if (isDemoMode) {
+        // In demo mode, simulate minting
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        localStorage.setItem('demo_hasNFT', 'true');
+        localStorage.setItem('demo_studentInfo', JSON.stringify({ avatarUri, studentName, studentId }));
+        const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+        return { tokenId: '1', txHash };
+      }
+      throw new Error('Contract not initialized');
+    }
 
     const tx = await this.contract.mint_student_nft(avatarUri, studentName, studentId);
     await this.contract.providerOrAccount.waitForTransaction(tx.transaction_hash);
@@ -83,7 +112,19 @@ export class StudentNFTService {
     studentName: string;
     studentId: string;
   }> {
-    if (!this.contract) throw new Error('Contract not initialized');
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!this.contract) {
+      if (isDemoMode) {
+        // In demo mode, get from localStorage
+        const data = localStorage.getItem('demo_studentInfo');
+        if (data) {
+          return JSON.parse(data);
+        }
+        return { avatarUri: '', studentName: '', studentId: '' };
+      }
+      throw new Error('Contract not initialized');
+    }
 
     const result = await this.contract.get_student_info(tokenId);
     return {
@@ -94,7 +135,17 @@ export class StudentNFTService {
   }
 
   async getBalance(address: string): Promise<string> {
-    if (!this.contract) throw new Error('Contract not initialized');
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!this.contract) {
+      if (isDemoMode) {
+        // In demo mode, get from localStorage
+        const balance = localStorage.getItem('demo_balance') || '0';
+        return balance;
+      }
+      throw new Error('Contract not initialized');
+    }
+
     const balance = await this.contract.balance_of(address);
     return balance.toString();
   }

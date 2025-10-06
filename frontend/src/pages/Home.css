@@ -1,6 +1,6 @@
 .home-page {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding-bottom: 80px;
 }
 
@@ -10,7 +10,7 @@
   align-items: center;
   padding: 20px;
   background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .home-header h2 {
@@ -22,6 +22,25 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.demo-badge {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .address-display {
@@ -41,24 +60,55 @@
   gap: 20px;
 }
 
+.demo-notice {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left: 4px solid #f59e0b;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.demo-notice p {
+  margin: 0;
+  color: #92400e;
+  font-size: 14px;
+}
+
 .balance-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 24px;
-  border-radius: 12px;
+  padding: 28px;
+  border-radius: 16px;
   text-align: center;
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.balance-card:hover {
+  transform: translateY(-4px);
 }
 
 .balance-card h3 {
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   font-size: 16px;
   opacity: 0.9;
+  font-weight: 500;
 }
 
 .balance-amount {
   margin: 0;
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nft-prompt {
@@ -94,13 +144,36 @@
   font-size: 14px;
   font-weight: 600;
   color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-group .required {
+  color: #ef4444;
+  font-size: 16px;
+}
+
+.avatar-preview-small {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.avatar-preview-small img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #667eea;
+  object-fit: cover;
 }
 
 .form-group input {
   padding: 10px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .form-group input:focus {

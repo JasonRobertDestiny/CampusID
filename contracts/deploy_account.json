@@ -1,0 +1,16 @@
+{
+    "version": 1,
+    "variant": {
+        "type": "braavos"
+    },
+    "deployment": {
+        "status": "deployed"
+    },
+    "signers": [
+        {
+            "type": "starkware_keccak",
+            "public_key": "0x02173fbe12ff48db4d659179b0655e4189fd440e9b8e5a1461de3caf8d0d76e8",
+            "with_leak_proof": false
+        }
+    ]
+}

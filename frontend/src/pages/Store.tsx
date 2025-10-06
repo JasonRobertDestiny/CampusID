@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
+import { useApp } from '../contexts/AppContext';
+import { useToast } from '../contexts/ToastContext';
 import { CampusTokenService } from '../services';
+import { MockCampusTokenService } from '../services/mockServices';
 import { Button, Card, Loading } from '../components';
 import { PRODUCTS, CONTRACT_ADDRESSES, NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
@@ -9,7 +12,9 @@ import type { Product } from '../types';
 import './Store.css';
 
 export const Store: React.FC = () => {
-  const { account, isConnected } = useWallet();
+  const { account, address, isConnected } = useWallet();
+  const { isDemoMode } = useApp();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [balance, setBalance] = useState('0');
   const [loading, setLoading] = useState(true);
@@ -17,7 +22,7 @@ export const Store: React.FC = () => {
   const [purchaseSuccess, setPurchaseSuccess] = useState<Product | null>(null);
   const [txHash, setTxHash] = useState<string>('');
 
-  const tokenService = new CampusTokenService();
+  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
 
   useEffect(() => {
     if (!isConnected) {
@@ -29,28 +34,32 @@ export const Store: React.FC = () => {
   }, [isConnected, account]);
 
   const loadBalance = async () => {
-    if (!account) return;
+    if (!isDemoMode && !account) return;
 
     try {
       setLoading(true);
-      tokenService.initialize(account);
-      const balance = await tokenService.getBalance(account.address);
+      if (!isDemoMode && account) {
+        tokenService.initialize(account);
+      }
+      const userAddress = address || '0x1234...5678';
+      const balance = await tokenService.getBalance(userAddress);
       setBalance(balance);
     } catch (error) {
       console.error('Error loading balance:', error);
+      showToast('Failed to load balance', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handlePurchase = async (product: Product) => {
-    if (!account) return;
+    if (!isDemoMode && !account) return;
 
     const currentBalance = parseFloat(balance);
     const productPrice = parseFloat(product.price);
 
     if (currentBalance < productPrice) {
-      alert('Insufficient balance! Please check in to earn more CPT.');
+      showToast('Insufficient balance! Please check in to earn more CPT.', 'warning');
       return;
     }
 
@@ -65,12 +74,13 @@ export const Store: React.FC = () => {
 
       setTxHash(hash);
       setPurchaseSuccess(product);
+      showToast(`Successfully purchased ${product.name}! 🎉`, 'success');
 
       // Reload balance
       await loadBalance();
 
       // Save to local history
-      const history = JSON.parse(localStorage.getItem('txHistory') || '[]');
+      const history = JSON.parse(localStorage.getItem(isDemoMode ? 'demo_history' : 'txHistory') || '[]');
       history.unshift({
         id: Date.now().toString(),
         type: 'purchase',
@@ -79,10 +89,10 @@ export const Store: React.FC = () => {
         txHash: hash,
         description: `Purchased ${product.name}`,
       });
-      localStorage.setItem('txHistory', JSON.stringify(history.slice(0, 50)));
+      localStorage.setItem(isDemoMode ? 'demo_history' : 'txHistory', JSON.stringify(history.slice(0, 50)));
     } catch (error) {
       console.error('Purchase error:', error);
-      alert('Purchase failed. Please try again.');
+      showToast('Purchase failed. Please try again.', 'error');
     } finally {
       setPurchasing(null);
     }

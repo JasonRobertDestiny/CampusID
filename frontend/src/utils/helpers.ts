@@ -1,6 +1,13 @@
 import { TOKEN_DECIMALS } from './constants';
 
 export const formatTokenAmount = (amount: string | number): string => {
+  // Handle demo mode - direct number formatting
+  if (typeof amount === 'string' && !isNaN(Number(amount))) {
+    const numAmount = Number(amount);
+    return numAmount.toFixed(2);
+  }
+
+  // Handle blockchain mode with decimals
   const value = typeof amount === 'string' ? BigInt(amount) : BigInt(amount);
   const divisor = BigInt(10 ** TOKEN_DECIMALS);
   const result = Number(value) / Number(divisor);

@@ -8,12 +8,24 @@
 }
 
 .login-container {
-  max-width: 400px;
+  max-width: 500px;
   width: 100%;
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 40px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-header {
@@ -22,7 +34,7 @@
 }
 
 .login-title {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   margin: 0 0 8px 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -53,15 +65,61 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 12px;
   font-size: 14px;
   color: #374151;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(5px);
 }
 
 .feature-icon {
   font-size: 24px;
+  flex-shrink: 0;
+}
+
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.divider {
+  text-align: center;
+  position: relative;
+  margin: 8px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.divider span {
+  padding: 0 10px;
+  background: white;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .error-message {
@@ -69,11 +127,46 @@
   font-size: 14px;
   text-align: center;
   margin: 0;
+  padding: 12px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
 }
 
-.wallet-note {
-  font-size: 12px;
-  color: #9ca3af;
-  text-align: center;
+.info-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.info-card {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.info-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.info-card p {
   margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 30px 20px;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
 }

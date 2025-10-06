@@ -1,7 +1,36 @@
+/// @title StudentNFT - ERC721 Student Certificate
+/// @notice NFT-based student identity certificates for campus ecosystem
+/// @dev OpenZeppelin ERC721-compatible implementation with student metadata
+/// @custom:security One NFT per address limit enforced
+/// Built for StarkNet Re{Solve} Hackathon - Privacy & Identity Track
+
+use starknet::ContractAddress;
+
+#[starknet::interface]
+trait IStudentNFT<TContractState> {
+    /// @notice Mint a new student certificate NFT
+    /// @dev Can only mint once per address, enforced by user_has_nft mapping
+    /// @param avatar_uri IPFS or HTTP URL for student avatar image
+    /// @param student_name Full name of the student
+    /// @param student_id Unique student identifier (e.g., STU202401)
+    /// @return token_id The newly minted NFT token ID
+    fn mint_student_nft(
+        ref self: TContractState,
+        avatar_uri: ByteArray,
+        student_name: ByteArray,
+        student_id: ByteArray
+    ) -> u256;
+    fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
+    fn owner_of(self: @TContractState, token_id: u256) -> ContractAddress;
+    fn get_student_info(self: @TContractState, token_id: u256) -> (ByteArray, ByteArray, ByteArray);
+    fn has_nft(self: @TContractState, account: ContractAddress) -> bool;
+}
+
 #[starknet::contract]
 mod StudentNFT {
     use starknet::{ContractAddress, get_caller_address};
     use starknet::storage::{Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess};
+    use core::num::traits::Zero;
 
     #[storage]
     struct Storage {
@@ -110,18 +139,4 @@ mod StudentNFT {
             self.user_has_nft.entry(account).read()
         }
     }
-}
-
-#[starknet::interface]
-trait IStudentNFT<TContractState> {
-    fn mint_student_nft(
-        ref self: TContractState,
-        avatar_uri: ByteArray,
-        student_name: ByteArray,
-        student_id: ByteArray
-    ) -> u256;
-    fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
-    fn owner_of(self: @TContractState, token_id: u256) -> ContractAddress;
-    fn get_student_info(self: @TContractState, token_id: u256) -> (ByteArray, ByteArray, ByteArray);
-    fn has_nft(self: @TContractState, account: ContractAddress) -> bool;
 }

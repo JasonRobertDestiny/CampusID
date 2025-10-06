@@ -1,7 +1,35 @@
+/// @title CampusToken - ERC20 Token for Campus Ecosystem
+/// @notice A custom ERC20 token with check-in rewards and campus store payment features
+/// @dev Compatible with OpenZeppelin ERC20 standard with additional campus-specific functions
+/// Built for StarkNet Re{Solve} Hackathon - Mobile-First dApps & Payments Track
+
+use starknet::ContractAddress;
+
+#[starknet::interface]
+trait ICampusToken<TContractState> {
+    fn name(self: @TContractState) -> ByteArray;
+    fn symbol(self: @TContractState) -> ByteArray;
+    fn decimals(self: @TContractState) -> u8;
+    fn total_supply(self: @TContractState) -> u256;
+    fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
+    fn allowance(self: @TContractState, owner: ContractAddress, spender: ContractAddress) -> u256;
+    fn transfer(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
+    fn approve(ref self: TContractState, spender: ContractAddress, amount: u256) -> bool;
+    fn transfer_from(
+        ref self: TContractState,
+        sender: ContractAddress,
+        recipient: ContractAddress,
+        amount: u256
+    ) -> bool;
+    fn check_in(ref self: TContractState) -> bool;
+    fn purchase(ref self: TContractState, store_address: ContractAddress, amount: u256) -> bool;
+}
+
 #[starknet::contract]
 mod CampusToken {
     use starknet::{ContractAddress, get_caller_address};
     use starknet::storage::{Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess};
+    use core::num::traits::Zero;
 
     #[storage]
     struct Storage {
@@ -106,17 +134,25 @@ mod CampusToken {
             true
         }
 
+        /// @notice Daily check-in to earn campus tokens
+        /// @dev Enforces 24-hour cooldown to prevent spam and ensure fair distribution
+        /// @return bool Success status of the check-in operation
         fn check_in(ref self: ContractState) -> bool {
             let caller = get_caller_address();
             let current_time = starknet::get_block_timestamp();
 
-            // Optional: Add cooldown check (e.g., once per day)
+            // Anti-spam protection: Enforce 24-hour cooldown between check-ins
             let last_time = self.last_checkin.entry(caller).read();
-            // For demo purposes, we'll allow immediate check-ins
-            // In production, add: assert(current_time > last_time + 86400, 'Cooldown active');
+            let cooldown: u64 = 86400; // 24 hours in seconds
+            if last_time != 0 {
+                assert(
+                    current_time >= last_time + cooldown,
+                    'Check-in cooldown: 24h required'
+                );
+            }
 
-            // Mint 10 CPT (10 * 10^18)
-            let reward_amount: u256 = 10_000_000_000_000_000_000;
+            // Mint check-in reward: 10 CPT tokens
+            let reward_amount: u256 = 10_000_000_000_000_000_000; // 10 CPT (10 * 10^18)
 
             let current_balance = self.balances.entry(caller).read();
             self.balances.entry(caller).write(current_balance + reward_amount);
@@ -168,24 +204,4 @@ mod CampusToken {
             self.emit(Transfer { from: sender, to: recipient, value: amount });
         }
     }
-}
-
-#[starknet::interface]
-trait ICampusToken<TContractState> {
-    fn name(self: @TContractState) -> ByteArray;
-    fn symbol(self: @TContractState) -> ByteArray;
-    fn decimals(self: @TContractState) -> u8;
-    fn total_supply(self: @TContractState) -> u256;
-    fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
-    fn allowance(self: @TContractState, owner: ContractAddress, spender: ContractAddress) -> u256;
-    fn transfer(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
-    fn approve(ref self: TContractState, spender: ContractAddress, amount: u256) -> bool;
-    fn transfer_from(
-        ref self: TContractState,
-        sender: ContractAddress,
-        recipient: ContractAddress,
-        amount: u256
-    ) -> bool;
-    fn check_in(ref self: TContractState) -> bool;
-    fn purchase(ref self: TContractState, store_address: ContractAddress, amount: u256) -> bool;
 }
