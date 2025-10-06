@@ -47,3 +47,8 @@ keystore.json
 # Deployment scripts (keep main ones)
 deploy_contracts.sh
 account_deploy.json
+
+# Hackathon submission docs (keep local, don't upload)
+HACKATHON_SUBMISSION_GUIDE.md
+*_SUBMISSION*.md
+*_VIDEO*.md
