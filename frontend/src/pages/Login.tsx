@@ -32,6 +32,14 @@ export const Login: React.FC = () => {
         <div className="login-header">
           <h1 className="login-title">🎓 Campus ID</h1>
           <p className="login-subtitle">Web3 Digital Student Identity</p>
+
+          {/* Current Mode Indicator */}
+          <div className={`mode-indicator ${isDemoMode ? 'demo' : 'production'}`}>
+            <span className="mode-icon">{isDemoMode ? '🚀' : '🔐'}</span>
+            <span className="mode-text">
+              {isDemoMode ? 'Demo Mode Active' : 'Production Mode - Wallet Required'}
+            </span>
+          </div>
         </div>
 
         <div className="login-content">

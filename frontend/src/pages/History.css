@@ -13,6 +13,12 @@
   gap: 20px;
 }
 
+.history-status-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .filter-tabs {
   display: flex;
   gap: 8px;
@@ -133,4 +139,11 @@
 
 .view-tx:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .history-status-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

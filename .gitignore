@@ -34,10 +34,9 @@ coverage/
 *.tmp
 .cache/
 
-# Claude tools and configs (keep .claude directory)
-.claude/cache/
-.claude/tmp/
-.claude/logs/
+# Claude tools and configs
+.claude/
+.claudeignore
 
 # StarkNet artifacts
 account.json

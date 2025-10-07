@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { resolveDemoMode } from '../utils/helpers';
 
 interface AppContextType {
   isDemoMode: boolean;
@@ -12,10 +13,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isDemoMode, setIsDemoMode] = useState(() => {
-    const saved = localStorage.getItem('demoMode');
-    return saved !== null ? saved === 'true' : true; // Default to demo mode
-  });
+  const [isDemoMode, setIsDemoMode] = useState(() => resolveDemoMode());
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
@@ -27,10 +25,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return (saved as 'en' | 'zh') || 'en';
   });
 
+  useEffect(() => {
+    setIsDemoMode(true);
+    try {
+      localStorage.setItem('demoMode', 'true');
+    } catch {
+      // Ignore storage access issues; state already enforces demo mode
+    }
+  }, []);
+
   const setDemoMode = (value: boolean) => {
     setIsDemoMode(value);
-    localStorage.setItem('demoMode', value.toString());
+    try {
+      localStorage.setItem('demoMode', value.toString());
+    } catch {
+      // Ignore storage access issues; state still reflects the correct value
+    }
   };
+  useEffect(() => {
+    try {
+      localStorage.setItem('demoMode', isDemoMode.toString());
+    } catch {
+      // Ignore storage access issues to avoid breaking the app in restrictive environments
+    }
+  }, [isDemoMode]);
+
 
   const toggleDarkMode = () => {
     const newValue = !isDarkMode;
@@ -67,6 +86,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {

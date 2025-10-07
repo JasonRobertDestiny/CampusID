@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
 import { useApp } from '../contexts/AppContext';
 import { useToast } from '../contexts/ToastContext';
 import { CampusTokenService } from '../services';
 import { MockCampusTokenService } from '../services/mockServices';
-import { Button, Card } from '../components';
+import { Button, Card, StatusBar } from '../components';
 import { CHECKIN_REWARD, NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
 import './CheckIn.css';
@@ -20,32 +20,37 @@ export const CheckIn: React.FC = () => {
   const [txHash, setTxHash] = useState<string>('');
   const [balance, setBalance] = useState('0');
 
-  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
+  const tokenService = useMemo(
+    () => (isDemoMode ? new MockCampusTokenService() : new CampusTokenService(isDemoMode)),
+    [isDemoMode]
+  );
 
-  useEffect(() => {
-    if (!isConnected) {
-      navigate('/');
-      return;
-    }
-
-    loadBalance();
-  }, [isConnected, account]);
-
-  const loadBalance = async () => {
+  const loadBalance = useCallback(async () => {
     if (!isDemoMode && (!account || !isConnected)) return;
 
     try {
-      if (!isDemoMode && account) {
+      // Initialize service with account (works for both real and mock services)
+      if (account) {
         tokenService.initialize(account);
       }
-      const userAddress = address || '0x1234...5678';
+      const userAddress = isDemoMode ? (address || 'demo-address') : (address || '0x1234...5678');
       const balance = await tokenService.getBalance(userAddress);
       setBalance(balance);
     } catch (error) {
       console.error('Error loading balance:', error);
       showToast('Failed to load balance', 'error');
     }
-  };
+  }, [account, address, isConnected, isDemoMode, showToast, tokenService]);
+
+  useEffect(() => {
+    // In demo mode, we don't need wallet connection
+    if (!isDemoMode && !isConnected) {
+      navigate('/');
+      return;
+    }
+
+    void loadBalance();
+  }, [isDemoMode, isConnected, loadBalance, navigate]);
 
   const handleCheckIn = async () => {
     if (!isDemoMode && !account) return;
@@ -61,6 +66,19 @@ export const CheckIn: React.FC = () => {
 
       // Reload balance after successful check-in
       await loadBalance();
+        if (!isDemoMode) {
+          const storageKey = 'txHistory';
+          const history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          history.unshift({
+            id: Date.now().toString(),
+            type: 'checkin',
+            amount: CHECKIN_REWARD,
+            timestamp: Date.now(),
+            txHash: hash,
+            description: 'Daily check-in reward',
+          });
+          localStorage.setItem(storageKey, JSON.stringify(history.slice(0, 50)));
+        }
     } catch (error) {
       console.error('Check-in error:', error);
       showToast('Check-in failed. Please try again.', 'error');
@@ -71,13 +89,16 @@ export const CheckIn: React.FC = () => {
 
   return (
     <div className="checkin-page">
-      <header className="page-header">
-        <Button onClick={() => navigate('/home')} variant="secondary">
-          ← Back
-        </Button>
-        <h2>Check In</h2>
-        <div style={{ width: '80px' }} />
-      </header>
+      <StatusBar
+        title="Daily Check-in"
+        description="Earn 10 CPT every day to boost your campus balance"
+        backTo="/home"
+        actions={
+          <Button variant="secondary" size="small" onClick={() => navigate('/history')}>
+            📜 View History
+          </Button>
+        }
+      />
 
       <div className="checkin-content">
         <div className="balance-display">

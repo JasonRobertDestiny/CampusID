@@ -9,6 +9,7 @@ interface ButtonProps {
   loading?: boolean;
   fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  size?: 'small' | 'medium' | 'large';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -19,11 +20,12 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   fullWidth = false,
   type = 'button',
+  size = 'medium',
 }) => {
   return (
     <button
       type={type}
-      className={`btn btn-${variant} ${fullWidth ? 'btn-full' : ''}`}
+      className={`btn btn-${variant} btn-${size} ${fullWidth ? 'btn-full' : ''}`}
       onClick={onClick}
       disabled={disabled || loading}
     >

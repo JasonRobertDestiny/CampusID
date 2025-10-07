@@ -1,13 +1,58 @@
 import type { AccountInterface } from 'starknet';
 import type { TransactionRecord } from '../types';
 
+type StorageLike = {
+  get: (key: string) => string | null;
+  set: (key: string, value: string) => void;
+  remove: (key: string) => void;
+};
+
+const memoryStorage = new Map<string, string>();
+
+const safeStorage: StorageLike = {
+  get: (key) => {
+    if (typeof window !== 'undefined') {
+      try {
+        return window.localStorage.getItem(key);
+      } catch {
+        // Fall back to memory storage
+      }
+    }
+    return memoryStorage.get(key) ?? null;
+  },
+  set: (key, value) => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(key, value);
+        return;
+      } catch {
+        // Fall back to memory storage
+      }
+    }
+    memoryStorage.set(key, value);
+  },
+  remove: (key) => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(key);
+        return;
+      } catch {
+        // Fall back to memory storage
+      }
+    }
+    memoryStorage.delete(key);
+  },
+};
+
 export class MockStudentNFTService {
-  initialize(_account?: AccountInterface) {
+  initialize(account?: AccountInterface) {
+    void account;
     // Mock service doesn't need initialization
   }
 
-  async hasNFT(_address: string): Promise<boolean> {
-    const data = localStorage.getItem('demo_hasNFT');
+  async hasNFT(address: string): Promise<boolean> {
+    void address;
+    const data = safeStorage.get('demo_hasNFT');
     return data === 'true';
   }
 
@@ -20,8 +65,8 @@ export class MockStudentNFTService {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Store NFT data locally
-    localStorage.setItem('demo_hasNFT', 'true');
-    localStorage.setItem(
+    safeStorage.set('demo_hasNFT', 'true');
+    safeStorage.set(
       'demo_studentInfo',
       JSON.stringify({ avatarUri, studentName, studentId })
     );
@@ -35,12 +80,13 @@ export class MockStudentNFTService {
     };
   }
 
-  async getStudentInfo(_tokenId: string): Promise<{
+  async getStudentInfo(tokenId: string): Promise<{
     avatarUri: string;
     studentName: string;
     studentId: string;
   }> {
-    const data = localStorage.getItem('demo_studentInfo');
+    void tokenId;
+    const data = safeStorage.get('demo_studentInfo');
     if (data) {
       return JSON.parse(data);
     }
@@ -51,19 +97,22 @@ export class MockStudentNFTService {
     };
   }
 
-  async getBalance(_address: string): Promise<string> {
-    const balance = localStorage.getItem('demo_balance') || '0';
+  async getBalance(address: string): Promise<string> {
+    void address;
+    const balance = safeStorage.get('demo_balance') || '0';
     return balance;
   }
 }
 
 export class MockCampusTokenService {
-  initialize(_account?: AccountInterface) {
+  initialize(account?: AccountInterface) {
+    void account;
     // Mock service doesn't need initialization
   }
 
-  async getBalance(_address: string): Promise<string> {
-    const balance = localStorage.getItem('demo_balance') || '0';
+  async getBalance(address: string): Promise<string> {
+    void address;
+    const balance = safeStorage.get('demo_balance') || '0';
     return balance;
   }
 
@@ -72,16 +121,16 @@ export class MockCampusTokenService {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Get current balance
-    const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
+  const currentBalance = parseFloat(safeStorage.get('demo_balance') || '0');
     const newBalance = currentBalance + 10;
-    localStorage.setItem('demo_balance', newBalance.toString());
+  safeStorage.set('demo_balance', newBalance.toString());
 
     // Generate fake transaction hash
     const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
 
     // Add to history
     const history: TransactionRecord[] = JSON.parse(
-      localStorage.getItem('demo_history') || '[]'
+      safeStorage.get('demo_history') || '[]'
     );
     history.unshift({
       id: Date.now().toString(),
@@ -91,7 +140,7 @@ export class MockCampusTokenService {
       txHash,
       description: 'Daily check-in reward',
     });
-    localStorage.setItem('demo_history', JSON.stringify(history.slice(0, 50)));
+  safeStorage.set('demo_history', JSON.stringify(history.slice(0, 50)));
 
     return txHash;
   }
@@ -101,7 +150,7 @@ export class MockCampusTokenService {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Get current balance
-    const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
+  const currentBalance = parseFloat(safeStorage.get('demo_balance') || '0');
     const amount = parseFloat(amountInCPT);
 
     if (currentBalance < amount) {
@@ -109,7 +158,7 @@ export class MockCampusTokenService {
     }
 
     const newBalance = currentBalance - amount;
-    localStorage.setItem('demo_balance', newBalance.toString());
+  safeStorage.set('demo_balance', newBalance.toString());
 
     // Generate fake transaction hash
     const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;

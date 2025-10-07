@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
 import { useApp } from '../contexts/AppContext';
-import { Button, Card } from '../components';
+import { Button, Card, StatusBar } from '../components';
 import { NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
 import type { TransactionRecord } from '../types';
@@ -15,22 +15,23 @@ export const History: React.FC = () => {
   const [history, setHistory] = useState<TransactionRecord[]>([]);
   const [filter, setFilter] = useState<'all' | 'checkin' | 'purchase'>('all');
 
-  useEffect(() => {
-    if (!isConnected) {
-      navigate('/');
-      return;
-    }
-
-    loadHistory();
-  }, [isConnected, isDemoMode]);
-
-  const loadHistory = () => {
+  const loadHistory = useCallback(() => {
     const storageKey = isDemoMode ? 'demo_history' : 'txHistory';
     const storedHistory = localStorage.getItem(storageKey);
     if (storedHistory) {
       setHistory(JSON.parse(storedHistory));
     }
-  };
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    // In demo mode, we don't need wallet connection
+    if (!isDemoMode && !isConnected) {
+      navigate('/');
+      return;
+    }
+
+    loadHistory();
+  }, [isDemoMode, isConnected, loadHistory, navigate]);
 
   const filteredHistory = history.filter((item) => {
     if (filter === 'all') return true;
@@ -51,13 +52,21 @@ export const History: React.FC = () => {
 
   return (
     <div className="history-page">
-      <header className="page-header">
-        <Button onClick={() => navigate('/home')} variant="secondary">
-          ← Back
-        </Button>
-        <h2>Transaction History</h2>
-        <div style={{ width: '80px' }} />
-      </header>
+      <StatusBar
+        title="Transaction History"
+        description="Review your recent check-ins and purchases"
+        backTo="/home"
+        actions={
+          <div className="history-status-actions">
+            <Button size="small" onClick={() => navigate('/checkin')}>
+              📝 Check In
+            </Button>
+            <Button size="small" variant="secondary" onClick={() => navigate('/store')}>
+              🛒 Store
+            </Button>
+          </div>
+        }
+      />
 
       <div className="history-content">
         <div className="filter-tabs">

@@ -1,154 +1,590 @@
+/* ===================================
+   Campus ID - CheckIn Page Styles
+   =================================== */
+
 .checkin-page {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: linear-gradient(135deg, var(--neutral-50) 0%, var(--success-50) 100%);
+  position: relative;
+}
+
+/* Background Pattern */
+.checkin-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.03) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .page-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: var(--space-4) var(--space-6);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-sm);
+  animation: slideDown 0.6s ease-out;
 }
 
 .page-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  background: var(--success-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .checkin-content {
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-6);
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-6);
 }
 
+/* Balance Display */
 .balance-display {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--success-gradient);
   color: white;
-  padding: 20px;
-  border-radius: 12px;
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-2xl);
   text-align: center;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  overflow: hidden;
+  animation: scaleIn 0.6s ease-out 0.2s both;
+  transition: all var(--transition-normal);
+}
+
+.balance-display::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+  background-size: 30px 30px;
+  animation: backgroundMove 30s linear infinite;
+}
+
+.balance-display:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-2xl);
 }
 
 .balance-label {
-  margin: 0 0 4px 0;
-  font-size: 14px;
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
   opacity: 0.9;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
 }
 
 .balance-value {
   margin: 0;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
-.checkin-card {
+.balance-value::after {
+  content: 'CPT';
+  font-size: var(--text-xl);
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Cards */
+.checkin-card,
+.success-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-10) var(--space-8);
   text-align: center;
-  padding: 32px 20px;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  animation: scaleIn 0.6s ease-out 0.4s both;
+}
+
+.checkin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.checkin-card:hover::before {
+  transform: scaleX(1);
 }
 
 .checkin-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
+  font-size: var(--text-6xl);
+  margin-bottom: var(--space-4);
+  animation: bounce 2s ease-in-out infinite;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.2));
 }
 
 .checkin-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--neutral-800);
+  letter-spacing: -0.02em;
 }
 
 .checkin-description {
-  color: #6b7280;
-  margin: 0 0 24px 0;
+  color: var(--neutral-600);
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  font-weight: 500;
 }
 
+/* Reward Highlight */
 .reward-highlight {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: #f0fdf4;
-  border: 2px solid #86efac;
-  border-radius: 8px;
-  margin-bottom: 24px;
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
+  border: 2px solid var(--success-300);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.reward-highlight::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 3px, transparent 3px);
+  background-size: 25px 25px;
+  animation: backgroundMove 20s linear infinite;
+}
+
+.reward-highlight:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .reward-label {
-  font-weight: 600;
-  color: #166534;
+  font-weight: 700;
+  color: var(--success-800);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  z-index: 1;
 }
 
 .reward-amount {
-  font-size: 20px;
-  font-weight: 700;
-  color: #15803d;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--success-900);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
+.reward-amount::before {
+  content: '+';
+  font-size: var(--text-lg);
+  color: var(--success-600);
+}
+
+/* Success Card */
 .success-card {
-  text-align: center;
-  padding: 32px 20px;
+  animation: scaleIn 0.8s ease-out 0.2s both;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 2px solid var(--success-200);
 }
 
 .success-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-  animation: scaleIn 0.5s ease-out;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
+  font-size: var(--text-6xl);
+  margin-bottom: var(--space-4);
+  animation: scaleIn 0.5s ease-out 0.3s both;
+  background: var(--success-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(16, 185, 129, 0.3));
 }
 
 .success-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  color: #15803d;
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--success-800);
+  letter-spacing: -0.02em;
+  animation: fadeIn 0.6s ease-out 0.5s both;
 }
 
 .success-message {
-  color: #6b7280;
-  margin: 0 0 20px 0;
+  color: var(--neutral-600);
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  font-weight: 500;
+  animation: fadeIn 0.6s ease-out 0.7s both;
 }
 
+/* New Balance */
 .new-balance {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-weight: 600;
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-4);
+  font-weight: 700;
+  color: var(--neutral-700);
+  transition: all var(--transition-normal);
+  animation: slideUp 0.6s ease-out 0.8s both;
+}
+
+.new-balance:hover {
+  background: rgba(102, 126, 234, 0.05);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .balance-highlight {
-  color: #667eea;
-  font-size: 20px;
+  color: var(--primary-600);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  font-family: var(--font-mono);
 }
 
+/* Transaction Link */
 .tx-link {
-  display: inline-block;
-  color: #667eea;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--primary-600);
   text-decoration: none;
-  font-size: 14px;
-  margin-bottom: 24px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-normal);
+  margin-bottom: var(--space-6);
+  animation: fadeIn 0.6s ease-out 0.9s both;
+}
+
+.tx-link::before {
+  content: '🔗';
+  font-size: var(--text-base);
 }
 
 .tx-link:hover {
-  text-decoration: underline;
+  background: var(--primary-600);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
+/* Action Buttons */
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
+  animation: fadeIn 0.6s ease-out 1s both;
+}
+
+.action-buttons .button {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.action-buttons .button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.action-buttons .button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Loading States */
+.checkin-card.loading .checkin-icon {
+  animation: spin 1s linear infinite;
+}
+
+.checkin-card.loading .checkin-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border: 4px solid transparent;
+  border-top-color: var(--primary-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite reverse;
+}
+
+/* Confetti Animation (for success) */
+.success-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 80% 80%, rgba(102, 126, 234, 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 40% 60%, rgba(236, 72, 153, 0.3) 2px, transparent 2px);
+  background-size: 50px 50px;
+  animation: confetti 3s ease-in-out;
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .page-header h2 {
+    font-size: var(--text-xl);
+  }
+
+  .checkin-content {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .checkin-card,
+  .success-card {
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .checkin-icon,
+  .success-icon {
+    font-size: var(--text-5xl);
+  }
+
+  .checkin-card h3,
+  .success-card h3 {
+    font-size: var(--text-2xl);
+  }
+
+  .balance-value {
+    font-size: var(--text-3xl);
+  }
+
+  .reward-amount {
+    font-size: var(--text-xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header h2 {
+    font-size: var(--text-lg);
+  }
+
+  .checkin-content {
+    padding: var(--space-3);
+  }
+
+  .checkin-card,
+  .success-card {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .checkin-icon,
+  .success-icon {
+    font-size: var(--text-4xl);
+  }
+
+  .checkin-card h3,
+  .success-card h3 {
+    font-size: var(--text-xl);
+  }
+
+  .balance-value {
+    font-size: var(--text-2xl);
+  }
+
+  .reward-highlight {
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .new-balance {
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: center;
+  }
+}
+
+/* Dark Mode */
+.dark-mode .checkin-page {
+  background: linear-gradient(135deg, var(--neutral-900) 0%, var(--neutral-800) 100%);
+}
+
+.dark-mode .checkin-page::before {
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(79, 172, 254, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+}
+
+.dark-mode .page-header {
+  background: rgba(30, 30, 30, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .checkin-card,
+.dark-mode .success-card {
+  background: rgba(40, 40, 40, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .checkin-card h3 {
+  color: var(--neutral-200);
+}
+
+.dark-mode .checkin-description,
+.dark-mode .success-message {
+  color: var(--neutral-400);
+}
+
+.dark-mode .reward-highlight {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark-mode .new-balance {
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(102, 126, 234, 0.2);
+  color: var(--neutral-300);
+}
+
+.dark-mode .tx-link {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
+  color: var(--primary-400);
+}
+
+.dark-mode .tx-link:hover {
+  background: var(--primary-600);
+  color: white;
+}
+
+/* Animation Performance */
+@media (prefers-reduced-motion: reduce) {
+  .balance-display::before,
+  .reward-highlight::before,
+  .checkin-icon {
+    animation: none;
+  }
+
+  .success-card::after {
+    display: none;
+  }
+
+  .checkin-card:hover,
+  .reward-highlight:hover {
+    transform: none;
+  }
+
+  .action-buttons .button::before {
+    display: none;
+  }
+}
+
+/* Focus States */
+.action-buttons .button:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.tx-link:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
 }

@@ -10,6 +10,14 @@ A decentralized campus digital identity ecosystem built on StarkNet, enabling st
 - **🛒 Campus Store**: Purchase virtual items using CPT tokens
 - **📜 Transaction History**: Track all activities with on-chain verification
 
+## 🖼️ Live Demo
+
+<p align="center">
+  <img src="./image.png" alt="Campus ID Demo - Transaction Confirmed on StarkNet" width="600">
+</p>
+
+*Real-time transaction confirmation and blockchain verification in action*
+
 ## 🚀 Quick Start
 
 ### Demo Mode (Immediate)

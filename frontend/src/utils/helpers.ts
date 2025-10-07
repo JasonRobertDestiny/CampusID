@@ -1,5 +1,24 @@
 import { TOKEN_DECIMALS } from './constants';
 
+export const resolveDemoMode = (override?: boolean): boolean => {
+  if (typeof override === 'boolean') {
+    return override;
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem('demoMode');
+      if (stored !== null) {
+        return stored === 'true';
+      }
+    } catch {
+      // Ignore storage access issues and fall back to environment configuration
+    }
+  }
+
+  return import.meta.env.VITE_DEMO_MODE === 'true';
+};
+
 export const formatTokenAmount = (amount: string | number): string => {
   // Handle demo mode - direct number formatting
   if (typeof amount === 'string' && !isNaN(Number(amount))) {

@@ -1,6 +1,6 @@
 import { Contract, AccountInterface } from 'starknet';
 import { CONTRACT_ADDRESSES } from '../utils/constants';
-import { formatTokenAmount, parseTokenAmount } from '../utils/helpers';
+import { formatTokenAmount, parseTokenAmount, resolveDemoMode } from '../utils/helpers';
 
 // Campus Token ABI (simplified)
 const CAMPUS_TOKEN_ABI = [
@@ -42,30 +42,37 @@ const CAMPUS_TOKEN_ABI = [
 
 export class CampusTokenService {
   private contract: Contract | null = null;
+  private readonly isDemoMode: boolean;
+
+  constructor(demoMode?: boolean) {
+    this.isDemoMode = resolveDemoMode(demoMode);
+  }
 
   initialize(account: AccountInterface) {
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
-
-    if (!CONTRACT_ADDRESSES.CAMPUS_TOKEN || CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      if (!isDemoMode) {
-        throw new Error('Campus Token contract address not configured. Please deploy contracts and update environment variables.');
-      }
-      // In demo mode, don't initialize the contract
+    if (this.isDemoMode) {
+      // Demo mode operates against local storage only
+      console.log('✅ Campus Token Service running in Demo Mode');
       return;
+    }
+
+    if (!CONTRACT_ADDRESSES.CAMPUS_TOKEN || 
+        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '' ||
+        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0' ||
+        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0000000000000000000000000000000000000000') {
+      console.warn('⚠️ Campus Token contract not deployed. Please deploy contracts or enable Demo Mode.');
+      throw new Error('🚀 Smart contracts not deployed yet! For the hackathon demo, please enable Demo Mode to test the app functionality.');
     }
 
     this.contract = new Contract(CAMPUS_TOKEN_ABI, CONTRACT_ADDRESSES.CAMPUS_TOKEN, account);
   }
 
   async getBalance(address: string): Promise<string> {
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (this.isDemoMode) {
+      const balance = localStorage.getItem('demo_balance') || '0';
+      return formatTokenAmount(balance);
+    }
 
     if (!this.contract) {
-      if (isDemoMode) {
-        // In demo mode, get from localStorage
-        const balance = localStorage.getItem('demo_balance') || '0';
-        return formatTokenAmount(balance);
-      }
       throw new Error('Contract not initialized');
     }
 
@@ -79,39 +86,36 @@ export class CampusTokenService {
   }
 
   async checkIn(): Promise<string> {
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (this.isDemoMode) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
+      const newBalance = currentBalance + 10;
+      localStorage.setItem('demo_balance', newBalance.toString());
+
+      const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+
+      const history: Array<{
+        id: string;
+        type: string;
+        amount: string;
+        timestamp: number;
+        txHash: string;
+        description: string;
+      }> = JSON.parse(localStorage.getItem('demo_history') || '[]');
+      history.unshift({
+        id: Date.now().toString(),
+        type: 'checkin',
+        amount: '10',
+        timestamp: Date.now(),
+        txHash,
+        description: 'Daily check-in reward',
+      });
+      localStorage.setItem('demo_history', JSON.stringify(history.slice(0, 50)));
+
+      return txHash;
+    }
 
     if (!this.contract) {
-      if (isDemoMode) {
-        // In demo mode, simulate check-in
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
-        const newBalance = currentBalance + 10;
-        localStorage.setItem('demo_balance', newBalance.toString());
-
-        const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
-
-        // Add to history
-        const history: Array<{
-          id: string;
-          type: string;
-          amount: string;
-          timestamp: number;
-          txHash: string;
-          description: string;
-        }> = JSON.parse(localStorage.getItem('demo_history') || '[]');
-        history.unshift({
-          id: Date.now().toString(),
-          type: 'checkin',
-          amount: '10',
-          timestamp: Date.now(),
-          txHash,
-          description: 'Daily check-in reward',
-        });
-        localStorage.setItem('demo_history', JSON.stringify(history.slice(0, 50)));
-
-        return txHash;
-      }
       throw new Error('Contract not initialized');
     }
 
@@ -122,25 +126,23 @@ export class CampusTokenService {
   }
 
   async purchase(storeAddress: string, amountInCPT: string): Promise<string> {
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (this.isDemoMode) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
+      const amount = parseFloat(amountInCPT);
+
+      if (currentBalance < amount) {
+        throw new Error('Insufficient balance');
+      }
+
+      const newBalance = currentBalance - amount;
+      localStorage.setItem('demo_balance', newBalance.toString());
+
+      const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+      return txHash;
+    }
 
     if (!this.contract) {
-      if (isDemoMode) {
-        // In demo mode, simulate purchase
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        const currentBalance = parseFloat(localStorage.getItem('demo_balance') || '0');
-        const amount = parseFloat(amountInCPT);
-
-        if (currentBalance < amount) {
-          throw new Error('Insufficient balance');
-        }
-
-        const newBalance = currentBalance - amount;
-        localStorage.setItem('demo_balance', newBalance.toString());
-
-        const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
-        return txHash;
-      }
       throw new Error('Contract not initialized');
     }
 
@@ -152,13 +154,11 @@ export class CampusTokenService {
   }
 
   async transfer(recipient: string, amountInCPT: string): Promise<string> {
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (this.isDemoMode) {
+      return this.purchase(recipient, amountInCPT);
+    }
 
     if (!this.contract) {
-      if (isDemoMode) {
-        // In demo mode, simulate transfer
-        return this.purchase(recipient, amountInCPT);
-      }
       throw new Error('Contract not initialized');
     }
 

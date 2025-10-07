@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
 import { useApp } from '../contexts/AppContext';
 import { useToast } from '../contexts/ToastContext';
 import { CampusTokenService } from '../services';
 import { MockCampusTokenService } from '../services/mockServices';
-import { Button, Card, Loading } from '../components';
+import { Button, Card, Loading, StatusBar } from '../components';
 import { PRODUCTS, CONTRACT_ADDRESSES, NETWORK_CONFIG } from '../utils/constants';
 import { getExplorerTxUrl } from '../utils/helpers';
 import type { Product } from '../types';
@@ -22,26 +22,21 @@ export const Store: React.FC = () => {
   const [purchaseSuccess, setPurchaseSuccess] = useState<Product | null>(null);
   const [txHash, setTxHash] = useState<string>('');
 
-  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
+  const tokenService = useMemo(
+    () => (isDemoMode ? new MockCampusTokenService() : new CampusTokenService(isDemoMode)),
+    [isDemoMode]
+  );
 
-  useEffect(() => {
-    if (!isConnected) {
-      navigate('/');
-      return;
-    }
-
-    loadBalance();
-  }, [isConnected, account]);
-
-  const loadBalance = async () => {
+  const loadBalance = useCallback(async () => {
     if (!isDemoMode && !account) return;
 
     try {
       setLoading(true);
-      if (!isDemoMode && account) {
+      // Initialize service with account (works for both real and mock services)
+      if (account) {
         tokenService.initialize(account);
       }
-      const userAddress = address || '0x1234...5678';
+      const userAddress = isDemoMode ? (address || 'demo-address') : (address || '0x1234...5678');
       const balance = await tokenService.getBalance(userAddress);
       setBalance(balance);
     } catch (error) {
@@ -50,7 +45,17 @@ export const Store: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [account, address, isDemoMode, showToast, tokenService]);
+
+  useEffect(() => {
+    // In demo mode, we don't need wallet connection
+    if (!isDemoMode && !isConnected) {
+      navigate('/');
+      return;
+    }
+
+    void loadBalance();
+  }, [isDemoMode, isConnected, loadBalance, navigate]);
 
   const handlePurchase = async (product: Product) => {
     if (!isDemoMode && !account) return;
@@ -104,13 +109,21 @@ export const Store: React.FC = () => {
 
   return (
     <div className="store-page">
-      <header className="page-header">
-        <Button onClick={() => navigate('/home')} variant="secondary">
-          ← Back
-        </Button>
-        <h2>Campus Store</h2>
-        <div style={{ width: '80px' }} />
-      </header>
+      <StatusBar
+        title="Campus Store"
+        description="Spend your Campus Points on merch and daily perks"
+        backTo="/home"
+        actions={
+          <div className="store-status-actions">
+            <Button size="small" onClick={() => navigate('/checkin')}>
+              📝 Check In
+            </Button>
+            <Button size="small" variant="secondary" onClick={() => navigate('/history')}>
+              📜 History
+            </Button>
+          </div>
+        }
+      />
 
       <div className="store-content">
         <div className="balance-display">

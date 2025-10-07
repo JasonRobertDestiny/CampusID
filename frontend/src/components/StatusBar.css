@@ -1,0 +1,144 @@
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border: 1px solid rgba(118, 75, 162, 0.15);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(10px);
+  max-width: 1100px;
+  margin: 0 auto 24px;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 220px;
+}
+
+.back-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  color: #4c51bf;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.2);
+}
+
+.back-button:hover {
+  transform: translateX(-2px);
+  background: white;
+}
+
+.status-titles h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+.status-titles p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.status-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mode-pill.demo {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.mode-pill.live {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.mode-pill:hover {
+  transform: translateY(-1px);
+}
+
+.pill-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.wallet-section {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet-address {
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #111827;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
+}
+
+.status-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .status-bar {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .status-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .status-titles h2 {
+    font-size: 18px;
+  }
+
+  .status-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wallet-address {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}

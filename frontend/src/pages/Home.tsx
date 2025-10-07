@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
 import { useApp } from '../contexts/AppContext';
@@ -28,30 +28,39 @@ export const Home: React.FC = () => {
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [minting, setMinting] = useState(false);
 
-  const nftService = isDemoMode ? new MockStudentNFTService() : new StudentNFTService();
-  const tokenService = isDemoMode ? new MockCampusTokenService() : new CampusTokenService();
+  const nftService = useMemo(
+    () => (isDemoMode ? new MockStudentNFTService() : new StudentNFTService(isDemoMode)),
+    [isDemoMode]
+  );
+  const tokenService = useMemo(
+    () => (isDemoMode ? new MockCampusTokenService() : new CampusTokenService(isDemoMode)),
+    [isDemoMode]
+  );
 
-  useEffect(() => {
-    if (!isConnected) {
-      navigate('/');
+  const loadData = useCallback(async () => {
+    // In production mode, we need wallet connection
+    if (!isDemoMode && (!account || !address)) {
+      console.log('Production mode requires wallet connection');
       return;
     }
-
-    loadData();
-  }, [isConnected, account]);
-
-  const loadData = async () => {
-    if (!isDemoMode && (!account || !address)) return;
 
     try {
       setLoading(true);
 
-      if (!isDemoMode) {
-        nftService.initialize(account!);
-        tokenService.initialize(account!);
+      // Initialize services
+      if (isDemoMode) {
+        // Create a dummy account for mock services (they don't actually use it)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dummyAccount = account || ({ address: 'demo-address' } as any);
+        nftService.initialize(dummyAccount);
+        tokenService.initialize(dummyAccount);
+      } else if (account) {
+        // Real services require actual account
+        nftService.initialize(account);
+        tokenService.initialize(account);
       }
 
-      const userAddress = address || '0x1234...5678';
+      const userAddress = isDemoMode ? (address || 'demo-address') : (address || '0x1234...5678');
       const [nftExists, tokenBalance] = await Promise.all([
         nftService.hasNFT(userAddress),
         tokenService.getBalance(userAddress),
@@ -70,7 +79,17 @@ export const Home: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [account, address, isDemoMode, nftService, tokenService, showToast]);
+
+  useEffect(() => {
+    // In demo mode, we can proceed without wallet connection
+    if (!isDemoMode && !isConnected) {
+      navigate('/');
+      return;
+    }
+
+    void loadData();
+  }, [isDemoMode, isConnected, loadData, navigate]);
 
   const handleMintNFT = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
