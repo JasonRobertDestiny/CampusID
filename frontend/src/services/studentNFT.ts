@@ -53,22 +53,17 @@ export class StudentNFTService {
   initialize(account: AccountInterface) {
     if (this.isDemoMode) {
       // Demo mode operates against local storage only
-      console.log('✅ Student NFT Service running in Demo Mode');
       return;
     }
 
-    if (!CONTRACT_ADDRESSES.STUDENT_NFT || 
-        CONTRACT_ADDRESSES.STUDENT_NFT === '' ||
-        CONTRACT_ADDRESSES.STUDENT_NFT === '0x0' ||
-        CONTRACT_ADDRESSES.STUDENT_NFT === '0x0000000000000000000000000000000000000000') {
-      console.warn('⚠️ Student NFT contract not deployed. Please deploy contracts or enable Demo Mode.');
+    if (!CONTRACT_ADDRESSES.STUDENT_NFT || CONTRACT_ADDRESSES.STUDENT_NFT === '0x0000000000000000000000000000000000000000') {
       throw new Error('🚀 Smart contracts not deployed yet! For the hackathon demo, please enable Demo Mode to test the app functionality.');
     }
 
     this.contract = new Contract(STUDENT_NFT_ABI, CONTRACT_ADDRESSES.STUDENT_NFT, account);
   }
 
-  async hasNFT(address: string): Promise<boolean> {
+  async hasNFT(address: string, retries = 3): Promise<boolean> {
     if (this.isDemoMode) {
       try {
         const data = localStorage.getItem('demo_hasNFT');
@@ -79,16 +74,27 @@ export class StudentNFTService {
     }
 
     if (!this.contract) {
-      throw new Error('Contract not initialized');
+      throw new Error('Contract not initialized. Please connect your wallet.');
     }
 
-    try {
-      const result = await this.contract.has_nft(address);
-      return result as boolean;
-    } catch (error) {
-      console.error('Error checking NFT:', error);
-      return false;
+    // Retry logic with exponential backoff
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const result = await this.contract.has_nft(address);
+        return result as boolean;
+      } catch (error) {
+        if (attempt === retries - 1) {
+          console.error('Error checking NFT after retries:', error);
+          return false;
+        }
+
+        // Exponential backoff: 1s, 2s, 4s
+        const delayMs = Math.pow(2, attempt) * 1000;
+        console.warn(`Retry ${attempt + 1}/${retries} for hasNFT after ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
     }
+    return false;
   }
 
   async mintNFT(
@@ -105,16 +111,57 @@ export class StudentNFTService {
     }
 
     if (!this.contract) {
-      throw new Error('Contract not initialized');
+      throw new Error('Contract not initialized. Please connect your wallet first.');
     }
 
-    const tx = await this.contract.mint_student_nft(avatarUri, studentName, studentId);
-    await this.contract.providerOrAccount.waitForTransaction(tx.transaction_hash);
+    try {
+      const tx = await this.contract.mint_student_nft(avatarUri, studentName, studentId);
 
-    return {
-      tokenId: '1', // In production, extract from events
-      txHash: tx.transaction_hash,
-    };
+      if (!tx || !tx.transaction_hash) {
+        throw new Error('Transaction failed: No transaction hash received.');
+      }
+
+      console.log(`NFT mint transaction sent: ${tx.transaction_hash}`);
+
+      // Wait for transaction confirmation with retry
+      let confirmed = false;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          await this.contract.providerOrAccount.waitForTransaction(tx.transaction_hash);
+          confirmed = true;
+          break;
+        } catch (error) {
+          if (attempt === 4) {
+            throw new Error('Transaction confirmation timeout. Please check block explorer for status.');
+          }
+          console.warn(`Waiting for confirmation... attempt ${attempt + 1}/5`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+
+      if (!confirmed) {
+        throw new Error('Transaction sent but confirmation timed out. Check block explorer.');
+      }
+
+      return {
+        tokenId: '1', // In production, extract from events
+        txHash: tx.transaction_hash,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          throw new Error('Transaction rejected by user.');
+        }
+        if (error.message.includes('insufficient funds')) {
+          throw new Error('Insufficient funds for gas fee. Please add testnet ETH.');
+        }
+        if (error.message.includes('already has NFT')) {
+          throw new Error('You already have a student NFT. Each address can only have one.');
+        }
+        throw error;
+      }
+      throw new Error('Failed to mint NFT. Please try again or contact support.');
+    }
   }
 
   async getStudentInfo(tokenId: string): Promise<{

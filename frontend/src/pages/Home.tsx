@@ -39,23 +39,13 @@ export const Home: React.FC = () => {
 
   const loadData = useCallback(async () => {
     // In production mode, we need wallet connection
-    if (!isDemoMode && (!account || !address)) {
-      console.log('Production mode requires wallet connection');
-      return;
-    }
+    if (!isDemoMode && (!account || !address)) return;
 
     try {
       setLoading(true);
 
-      // Initialize services
-      if (isDemoMode) {
-        // Create a dummy account for mock services (they don't actually use it)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dummyAccount = account || ({ address: 'demo-address' } as any);
-        nftService.initialize(dummyAccount);
-        tokenService.initialize(dummyAccount);
-      } else if (account) {
-        // Real services require actual account
+      // Initialize services with account (works for both real and mock services)
+      if (account) {
         nftService.initialize(account);
         tokenService.initialize(account);
       }

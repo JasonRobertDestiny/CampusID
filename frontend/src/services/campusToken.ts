@@ -51,15 +51,10 @@ export class CampusTokenService {
   initialize(account: AccountInterface) {
     if (this.isDemoMode) {
       // Demo mode operates against local storage only
-      console.log('✅ Campus Token Service running in Demo Mode');
       return;
     }
 
-    if (!CONTRACT_ADDRESSES.CAMPUS_TOKEN || 
-        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '' ||
-        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0' ||
-        CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0000000000000000000000000000000000000000') {
-      console.warn('⚠️ Campus Token contract not deployed. Please deploy contracts or enable Demo Mode.');
+    if (!CONTRACT_ADDRESSES.CAMPUS_TOKEN || CONTRACT_ADDRESSES.CAMPUS_TOKEN === '0x0000000000000000000000000000000000000000') {
       throw new Error('🚀 Smart contracts not deployed yet! For the hackathon demo, please enable Demo Mode to test the app functionality.');
     }
 
@@ -116,13 +111,57 @@ export class CampusTokenService {
     }
 
     if (!this.contract) {
-      throw new Error('Contract not initialized');
+      throw new Error('Contract not initialized. Please connect your wallet first.');
     }
 
-    const tx = await this.contract.check_in();
-    await this.contract.providerOrAccount.waitForTransaction(tx.transaction_hash);
+    try {
+      const tx = await this.contract.check_in();
 
-    return tx.transaction_hash;
+      if (!tx || !tx.transaction_hash) {
+        throw new Error('Transaction failed: No transaction hash received.');
+      }
+
+      console.log(`Check-in transaction sent: ${tx.transaction_hash}`);
+
+      // Wait for confirmation with retry
+      let confirmed = false;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          await this.contract.providerOrAccount.waitForTransaction(tx.transaction_hash);
+          confirmed = true;
+          break;
+        } catch (error) {
+          if (attempt === 4) {
+            throw new Error('Transaction confirmation timeout. Your check-in may still succeed - please check later.');
+          }
+          console.warn(`Waiting for confirmation... attempt ${attempt + 1}/5`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+
+      if (!confirmed) {
+        throw new Error('Transaction sent but confirmation timed out. Check your transaction history later.');
+      }
+
+      return tx.transaction_hash;
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          throw new Error('Transaction rejected by user.');
+        }
+        if (error.message.includes('insufficient funds')) {
+          throw new Error('Insufficient funds for gas fee. Please add testnet ETH.');
+        }
+        if (error.message.includes('already checked in')) {
+          throw new Error('You have already checked in today. Come back tomorrow!');
+        }
+        if (error.message.includes('cooldown')) {
+          throw new Error('Check-in cooldown active. Please wait 24 hours between check-ins.');
+        }
+        throw error;
+      }
+      throw new Error('Check-in failed. Please try again later.');
+    }
   }
 
   async purchase(storeAddress: string, amountInCPT: string): Promise<string> {

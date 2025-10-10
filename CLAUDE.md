@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Web3 Campus Digital Identity + Points Ecosystem for StarkNet Re{Solve} Hackathon. This is an H5 mobile application that implements:
+Web3 Campus Digital Identity + Points Ecosystem for StarkNet Re{Solve} Hackathon. This is a completed hackathon submission featuring an H5 mobile application that implements:
 - Wallet-based authentication (ArgentX on StarkNet)
 - NFT-based student certificates (ERC721)
 - Campus points token system (ERC20 - CampusToken/CPT)
 - Virtual campus store with token-based payments
+- **Current Status**: Demo mode enabled by default, no live contracts deployed
 
 ## Tech Stack
 
@@ -27,66 +28,79 @@ Web3 Campus Digital Identity + Points Ecosystem for StarkNet Re{Solve} Hackathon
 - StudentNFT: ERC721 with student metadata (avatar, name, student ID)
 - CampusToken: ERC20 with check-in reward mechanism
 - Compilation targets: Sierra and CASM formats
-- Deploy to StarkNet Sepolia testnet
+- Deploy target: StarkNet Sepolia testnet (not currently deployed)
 
 ## Project Structure
 
 ```
 /contracts/                 # Cairo smart contracts
   src/
+    lib.cairo              # Module declarations
     student_nft.cairo      # ERC721 student certificate
     campus_token.cairo     # ERC20 campus points
   Scarb.toml               # Contract dependencies and build config
-  target/                  # Compiled contract artifacts
+  target/dev/              # Compiled contract artifacts
+    campus_contracts_StudentNFT.contract_class.json
+    campus_contracts_CampusToken.contract_class.json
 
 /frontend/                  # React H5 mobile application
   src/
     /components/           # Reusable UI components
-      AvatarPicker.tsx     # NFT avatar selection
-      index.ts            # Component exports
-    /contexts/             # React Context providers
+      StatusBar.tsx       # Modified: Status display component
+      StatusBar.css       # Modified: Status styles
+      AvatarPicker.tsx    # NFT avatar selection
+    /contexts/            # React Context providers
       WalletContext.tsx   # ArgentX wallet connection
-      AppContext.tsx      # Application state
+      AppContext.tsx      # Application state (demo mode forced disabled)
       ToastContext.tsx    # Notification system
     /pages/               # Route components
       Login.tsx          # Wallet connection page
-      Home.tsx           # Student certificate display
+      Home.tsx           # Modified: Student certificate display
       CheckIn.tsx        # Daily check-in rewards
       Store.tsx          # Campus store with products
       History.tsx        # Transaction history
-    /services/            # Contract interaction services
-      studentNFT.ts      # StudentNFT contract service
-      campusToken.ts     # CampusToken contract service
+    /services/           # Contract interaction services
+      studentNFT.ts      # Modified: StudentNFT contract service
+      campusToken.ts     # Modified: CampusToken contract service
       mockServices.ts    # Development mock services
-    /utils/               # Utilities and constants
+    /utils/              # Utilities and constants
       constants.ts       # Contract addresses and config
       mockData.ts        # Mock data for development
     App.tsx              # Main application component
     App.css              # Global styles
   package.json           # Frontend dependencies
+  .env                   # Environment config (demo mode enabled)
+  vite.config.ts        # Vite configuration
+  tsconfig.json         # TypeScript project references
+  tsconfig.app.json     # App TypeScript config
+  tsconfig.node.json    # Node TypeScript config
+
+/install-tools.sh          # Untracked: Script to install scarb and starkli
 ```
 
-## Core Smart Contract Logic
-
-**StudentNFT Contract (ERC721):**
-- Mints unique student certificate on first login
-- Stores: avatar URI, student name, student ID
-- One NFT per wallet address
-
-**CampusToken Contract (ERC20):**
-- Token symbol: CPT
-- Distributes 10 CPT per check-in
-- Handles token transfers for store purchases
-- Owner can mint unlimited supply
-
 ## Development Commands
+
+**Tool Installation:**
+```bash
+# Install StarkNet development tools (scarb and starkli)
+./install-tools.sh
+
+# Activate tools after installation
+source ~/.bashrc
+source ~/.starkli/env
+starkliup
+
+# Verify installation
+scarb --version
+starkli --version
+```
 
 **Frontend Development:**
 ```bash
 cd frontend
 npm install           # Install dependencies
 npm run dev          # Start development server on localhost:5173
-npm run build        # Build for production
+npm run build        # Build for production (runs tsc -b && vite build)
 npm run lint         # Run ESLint checks
 npm run preview      # Test production build locally
 ```
@@ -95,41 +109,104 @@ npm run preview      # Test production build locally
 ```bash
 cd contracts
 scarb build          # Compile Cairo contracts to Sierra and CASM
-scarb test           # Run contract tests (if test files exist)
 scarb clean          # Clean build artifacts
+
+# Note: scarb test is configured but no test files exist
 ```
 
-**Testing & Validation:**
+**Type Checking:**
 ```bash
-# Frontend build test
-cd frontend && npm run build
-
-# Contract compilation test
-cd contracts && scarb build
-
-# Type checking
-cd frontend && npx tsc --noEmit
-
-# Note: No automated tests currently exist in the codebase
-# Manual testing through demo mode or live wallet connection required
+cd frontend
+npx tsc --noEmit     # Type-only validation without building
 ```
 
-**Deployment:**
+## Testing Infrastructure
+
+**Current State:**
+- ❌ No test files exist in the codebase
+- ❌ No test runner configured in package.json
+- ✅ Manual testing through demo mode
+- ✅ Type checking with TypeScript strict mode
+
+**Testing Approach:**
+- Demo mode (`VITE_DEMO_MODE=true`) for functionality testing
+- Manual wallet connection testing with ArgentX
+- Build validation with `npm run build`
+
+## Deployment & Configuration
+
+**Environment Variables (frontend/.env):**
+```env
+VITE_STARKNET_NETWORK=sepolia
+VITE_STARKNET_RPC_URL=https://starknet-sepolia.public.blastapi.io
+VITE_STUDENT_NFT_ADDRESS=0x0000000000000000000000000000000000000000  # Placeholder
+VITE_CAMPUS_TOKEN_ADDRESS=0x0000000000000000000000000000000000000000  # Placeholder
+VITE_STORE_ADDRESS=0x0000000000000000000000000000000000000000  # Placeholder
+VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
+VITE_DEMO_MODE=true  # Currently enabled by default
+```
+
+**Contract Deployment:**
 ```bash
-# Manual deployment via starkli (no deployment scripts exist in codebase)
+# Manual deployment process (no scripts exist)
 cd contracts
-scarb build  # Compile to Sierra and CASM
+scarb build  # Compile to target/dev/
 
-# Deploy using starkli commands (requires starkli CLI installed)
-# 1. Declare contracts: starkli declare target/dev/campus_contracts_StudentNFT.contract_class.json
-# 2. Deploy contracts: starkli deploy <class_hash> <constructor_args>
-# 3. Update frontend/.env with deployed contract addresses
+# Use starkli CLI for deployment (example):
+starkli declare target/dev/campus_contracts_StudentNFT.contract_class.json \
+  --rpc <RPC_URL> \
+  --account <ACCOUNT_FILE> \
+  --private-key <PRIVATE_KEY>
+
+# Deploy contract with constructor args
+starkli deploy <CLASS_HASH> <CONSTRUCTOR_ARGS> \
+  --rpc <RPC_URL> \
+  --account <ACCOUNT_FILE> \
+  --private-key <PRIVATE_KEY>
+
+# Update frontend/.env with deployed addresses
 ```
+
+## Architecture Notes
+
+**State Management:**
+- Three-context provider architecture (nesting order): AppProvider → ToastProvider → WalletProvider
+- AppContext manages global app state (demo mode, dark mode, language) - MUST be outermost
+- ToastContext handles user notifications and loading states
+- WalletContext handles ArgentX connection via get-starknet library (innermost, depends on App/Toast contexts)
+- Auto-reconnect on page load via localStorage check
+- **Note**: Demo mode is forcibly disabled in AppContext.tsx:18-19, requiring real wallet connection
+
+**Contract Interaction Pattern:**
+- Service-based architecture: StudentNFTService and CampusTokenService classes
+- All contract calls through starknet.js Contract class with ABI definitions embedded in services
+- Services handle ABI parsing, contract instantiation, and transaction execution
+- Transaction lifecycle: send → wait for confirmation → update UI
+- Demo mode fallback: services check `VITE_DEMO_MODE` env var and use localStorage when contracts unavailable
+- Services throw descriptive errors prompting users to enable demo mode if contracts not deployed
+
+**Configuration Management:**
+- CONTRACT_ADDRESSES in utils/constants.ts loaded from environment variables
+- PRODUCTS array in constants.ts defines store items (Coffee 20 CPT, Bread 30 CPT, Drink 50 CPT)
+- NETWORK_CONFIG provides chainId, rpcUrl, explorerUrl from environment
+
+**Demo/Production Modes:**
+- **Demo mode** (`VITE_DEMO_MODE=true`):
+  - No wallet connection required - bypasses ArgentX entirely
+  - Uses localStorage for state persistence (keys: demo_hasNFT, demo_studentInfo, demo_balance, demo_transactions)
+  - Services detect demo mode and return mock data after simulated delays
+  - Generates fake transaction hashes for UI consistency
+  - Currently enabled by default in .env
+- **Production mode** (`VITE_DEMO_MODE=false`):
+  - Requires ArgentX wallet extension installed
+  - Connects to live StarkNet contracts via starknet.js
+  - Real blockchain transactions with gas fees
+  - Contract addresses must be configured (currently placeholders)
 
 ## Key User Flows
 
 1. **Initial Login:**
-   - User connects ArgentX wallet via starknet.js
+   - User connects ArgentX wallet (or demo mode bypass)
    - System checks if user has student NFT
    - If not, auto-mint student certificate NFT with user info
 
@@ -148,114 +225,13 @@ scarb build  # Compile to Sierra and CASM
    - Display recent operations (check-ins, purchases)
    - Show transaction hashes for on-chain verification
 
-## Architecture Notes
-
-**State Management:**
-- Three-context provider architecture (nesting order): AppProvider → ToastProvider → WalletProvider
-- AppContext manages global app state (demo mode, dark mode, language) - MUST be outermost
-- ToastContext handles user notifications and loading states
-- WalletContext handles ArgentX connection via get-starknet library (innermost, depends on App/Toast contexts)
-- Auto-reconnect on page load via localStorage check
-
-**Contract Interaction Pattern:**
-- Service-based architecture: StudentNFTService and CampusTokenService classes
-- All contract calls through starknet.js Contract class with ABI definitions embedded in services
-- Services handle ABI parsing, contract instantiation, and transaction execution
-- Transaction lifecycle: send → wait for confirmation → update UI
-- Demo mode fallback: services check `VITE_DEMO_MODE` env var and use localStorage when contracts unavailable
-- Services throw descriptive errors prompting users to enable demo mode if contracts not deployed
-
-**Configuration Management:**
-- CONTRACT_ADDRESSES in utils/constants.ts loaded from environment variables
-- Environment variables in frontend/.env:
-  - VITE_STUDENT_NFT_ADDRESS: StudentNFT contract address
-  - VITE_CAMPUS_TOKEN_ADDRESS: CampusToken contract address
-  - VITE_STARKNET_NETWORK: Network identifier (default: 'sepolia')
-  - VITE_STARKNET_RPC_URL: RPC endpoint URL
-  - VITE_DEMO_MODE: 'true' for demo mode, 'false' for production
-- PRODUCTS array in constants.ts defines store items (Coffee 20 CPT, Bread 30 CPT, Drink 50 CPT)
-- NETWORK_CONFIG provides chainId, rpcUrl, explorerUrl from environment
-
-**Error Handling:**
-- Wallet not installed → prompt user to install ArgentX
-- Insufficient balance → show clear error message
-- Transaction failed → display transaction hash for debugging
-- Network issues → show retry mechanism with timeout handling
-
-## UI Pages
-
-1. **Login Page (/)**: Wallet connection button, entry point
-2. **Home Page (/home)**: Display student certificate NFT card with avatar, name, ID
-3. **Check-in Page (/checkin)**: Button to earn 10 CPT daily reward
-4. **Store Page (/store)**: Product list with prices in CPT (Coffee 20, Bread 30, Drink 50)
-5. **History Page (/history)**: Transaction records with blockchain verification links
-
-**Routing:** React Router v7 with BrowserRouter, all routes defined in App.tsx
-
-## MVP Requirements
-
-Minimum viable features for hackathon demo:
-1. ✅ Wallet login (ArgentX)
-2. ✅ Auto-mint student NFT on first login
-3. ✅ Check-in rewards (10 CPT)
-4. ✅ Store purchases with token payment
-
-Nice-to-have:
-- Transaction history with on-chain verification
-- Enhanced UI/UX
-- NFT badge system for achievements
-
-## Testing Strategy
-
-**Contract Tests:**
-- Test NFT minting (one per address)
-- Test token distribution (10 CPT per check-in)
-- Test token transfers for purchases
-- Test insufficient balance scenarios
-
-**Frontend Tests:**
-- Mock wallet connection
-- Test transaction flow end-to-end
-- Test error states
-
-## StarkNet Testnet Configuration
-
-Use StarkNet Sepolia testnet for deployment:
-- Get testnet ETH from StarkNet faucet
-- Configure RPC endpoints in environment variables
-- Store deployed contract addresses in utils/constants.ts
-
-**Environment Variables (frontend/.env):**
-```env
-VITE_STARKNET_NETWORK=sepolia
-VITE_STARKNET_RPC_URL=https://starknet-sepolia.public.blastapi.io
-VITE_STUDENT_NFT_ADDRESS=0x...
-VITE_CAMPUS_TOKEN_ADDRESS=0x...
-VITE_STORE_ADDRESS=0x...
-VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
-```
-
-**Contract Address Management:**
-- Update CONTRACT_ADDRESSES in utils/constants.ts after deployment
-- Addresses used by services for contract instantiation
-- Environment variables override for different networks
-
-**Demo/Production Modes:**
-- **Demo mode** (`VITE_DEMO_MODE=true`):
-  - No wallet connection required - bypasses ArgentX entirely
-  - Uses localStorage for state persistence (keys: demo_hasNFT, demo_studentInfo, demo_balance, demo_transactions)
-  - Services detect demo mode and return mock data after simulated delays
-  - Generates fake transaction hashes for UI consistency
-  - Perfect for presentations and testing without deployed contracts
-- **Production mode** (`VITE_DEMO_MODE=false` or unset):
-  - Requires ArgentX wallet extension installed
-  - Connects to live StarkNet contracts via starknet.js
-  - Real blockchain transactions with gas fees
-  - Services throw errors if contract addresses not configured
-- **Mode switching**: Change VITE_DEMO_MODE in .env and restart dev server
-- **Current state** (AppContext.tsx:18-19): Demo mode forcibly disabled, always requires real wallet
-
 ## Important Development Notes
+
+**Project State:**
+- Git status shows modified files in StatusBar components and services
+- install-tools.sh is untracked
+- Main branch contains completed hackathon submission
+- Recent commits focused on GitHub release preparation
 
 **Cairo Contract Structure:**
 - contracts/src/lib.cairo: Module declarations (includes student_nft and campus_token modules)
@@ -264,8 +240,9 @@ VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
 
 **TypeScript Configuration:**
 - Strict mode enabled
+- Uses project references (tsconfig.app.json and tsconfig.node.json)
 - Build command runs type checking before Vite build: `tsc -b && vite build`
-- Use `npx tsc --noEmit` for type-only validation without building
+- Incremental compilation enabled for faster builds
 
 **Wallet Integration Patterns:**
 - get-starknet returns wallet object, must call `.enable()` before accessing account
@@ -276,6 +253,7 @@ VITE_BLOCK_EXPLORER_URL=https://sepolia.voyager.online
 **Common Pitfalls:**
 - Context provider order matters: App context MUST wrap Toast and Wallet contexts
 - Demo mode check appears in both AppContext (global state) and individual services (contract interaction)
-- Contract addresses from env vars can be empty strings - services handle gracefully in demo mode
+- Contract addresses from env vars are currently placeholder zeros
 - Transaction hashes must be awaited via `waitForTransaction()` before showing success
 - StarkNet uses felt252 and u256 types - ensure proper type conversion in ABI calls
+- No actual deployment scripts exist despite README references
